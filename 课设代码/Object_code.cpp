@@ -7,6 +7,7 @@
 #include<string>
 #include<sstream>
 #include <string.h>
+#include<map>
 
 using namespace std;
 
@@ -43,7 +44,6 @@ void objectcode_virtual(int dstart, int dend);
 void objectcode_asm(int dstart, int dend);     
 void active_info_write(int dstart, int dend);
 
-
 void active_info()//基本块内填写活跃信息
 {
     int m, n;
@@ -77,7 +77,7 @@ void active_info_write(int dstart, int dend)   //活跃信息的填写
         {
             continue;
         }
-        if (Ac.size() == 0)
+        if (Ac.size() == 0)     //初始化
         {
             act.q = NewQt[i].second;
             if (act.q.at(0) == 't')
@@ -197,13 +197,25 @@ void objectcode_virtual(int dstart, int dend)   //生成虚拟机目标代码
 
 }
 
-void objectcode_asm(int dstart, int dend)       //生成汇编目标代码
+bool isNum(string s)
+{
+    for (int i = 0; i < s.length(); i++)
+        if (s[i] < '0' || s[i]>'9')
+            return false;
+    return true;
+}
+
+void objectcode_asm(int dstart, int dend)
 {
     int i;//当前处理的四元式
-
-    int AX, BX, CX, DX = -1;   //寄存器状态
-
+    int rdl = -1;
+    string AX, BX, CX, DX = " ";   //寄存器状态
+    map<string, int> offsetTable;
+    int offset = 2;
+    int DIoffset = 0;
     CODE("DSEG", "SEGMENT", " ");
+    CODE("TEMP", "DW", "2 DUP(?)");
+    CODE("DATA", "DW", "100 DUP(?)");
     CODE("DSEG", "ENDS", " ");
     CODE("SSEG", "SEGMENT", " ");
     CODE("STACK", "DW", "50 DUP(0)");
@@ -222,17 +234,139 @@ void objectcode_asm(int dstart, int dend)       //生成汇编目标代码
             CODE("MOV", "AX,", "SSEG");
             CODE("MOV", "SS,", "AX");
             CODE("MOV", "SP,", "SIZE STACK");
+            CODE("MOV", "DI,", "OFFSET DATA");
+            CODE("MOV", "SI,", "OFFSET TEMP");
         }
         else if (NewQt[i].first != "hanshu" && NewQt[i].fourth == "main")
         {
 
         }
+        else if (NewQt[i].first == "END")
+        {
+
+        }
+        else if ((NewQt[i].first == "+") && (NewQt[i].third != "_"))        //双目加法
+        {
+            if (DX == " ")
+            {
+                CODE("MOV", "DX,", NewQt[i].second);
+                CODE("MOV", "BX,", NewQt[i].third);
+            }
+            else if (DX == NewQt[i].second)
+            {
+                if (NewQt[i].secondac)
+                {
+                    CODE("MOV", "[DI+" + to_string(DIoffset + offset) + "],", "DX");
+                    DIoffset += offset;
+                    offsetTable.insert(pair<string, int>(NewQt[rdl].fourth, DIoffset));
+                }
+                if (isNum(NewQt[i].third))
+                {
+                    CODE("MOV", "BX,", NewQt[i].third);
+                }
+                else
+                {
+                    int add = offsetTable.find(NewQt[i].third)->second;
+                    CODE("MOV", "BX,", "[DI+" + to_string(add) + "]");
+                }
+            }
+            else
+            {
+                if ((rdl != -1) && (NewQt[rdl].fourthac))
+                {
+                    CODE("MOV", "[DI+" + to_string(DIoffset + offset) + "],", "DX");
+                    DIoffset += offset;
+                    offsetTable.insert(pair<string, int>(NewQt[rdl].fourth, DIoffset));
+                }
+                if (isNum(NewQt[i].second))
+                {
+                    CODE("MOV", "DX,", NewQt[i].second);
+                }
+                else
+                {
+                    int add = offsetTable.find(NewQt[i].second)->second;
+                    CODE("MOV", "DX,", "[DI+" + to_string(add) + "]");
+                }
+                if (isNum(NewQt[i].third))
+                {
+                    CODE("MOV", "BX,", NewQt[i].third);
+                }
+                else
+                {
+                    int add = offsetTable.find(NewQt[i].third)->second;
+                    CODE("MOV", "BX,", "[DI+" + to_string(add) + "]");
+                }
+            }
+            CODE("ADD", "DX,", "BX");
+            BX = NewQt[i].third;
+            DX = NewQt[i].fourth;
+            rdl = i;
+        }
+        else if ((NewQt[i].first == "-") && (NewQt[i].third != "_"))             //双目减法
+        {
+            if (DX == " ")
+            {
+                CODE("MOV", "DX,", NewQt[i].second);
+                CODE("MOV", "BX,", NewQt[i].third);
+            }
+            else if (DX == NewQt[i].second)
+            {
+                if (NewQt[i].secondac)
+                {
+                    CODE("MOV", "[DI+" + to_string(DIoffset + offset) + "],", "DX");
+                    DIoffset += offset;
+                    offsetTable.insert(pair<string, int>(NewQt[rdl].fourth, DIoffset));
+                }
+                if (isNum(NewQt[i].third))
+                {
+                    CODE("MOV", "BX,", NewQt[i].third);
+                }
+                else
+                {
+                    int add = offsetTable.find(NewQt[i].third)->second;
+                    CODE("MOV", "BX,", "[DI+" + to_string(add) + "]");
+                }
+            }
+            else
+            {
+                if ((rdl != -1) && (NewQt[rdl].fourthac))
+                {
+                    CODE("MOV", "[DI+" + to_string(DIoffset + offset) + "],", "DX");
+                    DIoffset += offset;
+                    offsetTable.insert(pair<string, int>(NewQt[rdl].fourth, DIoffset));
+                }
+                if (isNum(NewQt[i].second))
+                {
+                    CODE("MOV", "DX,", NewQt[i].second);
+                }
+                else
+                {
+                    int add = offsetTable.find(NewQt[i].second)->second;
+                    CODE("MOV", "DX,", "[DI+" + to_string(add) + "]");
+                }
+                if (isNum(NewQt[i].third))
+                {
+                    CODE("MOV", "BX,", NewQt[i].third);
+                }
+                else
+                {
+                    int add = offsetTable.find(NewQt[i].third)->second;
+                    CODE("MOV", "BX,", "[DI+" + to_string(add) + "]");
+                }
+            }
+            CODE("SUB", "DX,", "BX");
+            BX = NewQt[i].third;
+            DX = NewQt[i].fourth;
+            rdl = i;
+        }
+
     }
     CODE("MOV", "AH,", "4CH");
     CODE("INT", "21H", "");
     CODE("CSEG", "ENDS", " ");
     CODE("", "END", "START");
 }
+
 
 void obcode_to_file() {
     ofstream file("mubiao.txt");
