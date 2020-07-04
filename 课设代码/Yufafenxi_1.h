@@ -2,6 +2,7 @@
 #include<iostream>
 #include <fstream>
 #include<string>
+#include "fuhaobiao.h"
 
 using namespace std;
 
@@ -39,12 +40,13 @@ void initSYNBL(int i)
 
 }
 
+//文法产生式1
 Token *Start(Token *  arrow)
 {
 	Next(infile);
 	arrow = arrow->next;
-	arrow = Chengxu(arrow);
-	arrow = Houjichengxu(arrow);
+	arrow = Chengxu(arrow);//进入 程序 子程序
+	arrow = Houjichengxu(arrow);//进入 后继程序 子程序
 	return  arrow;
 }
 
@@ -52,8 +54,8 @@ Token *Houjichengxu(Token *  arrow)
 {
 	if (arrow->type == 45);//判断#,45为“#”在Token表中的顺序号码
 	else {
-		arrow = Chengxu(arrow); 
-		arrow = Houjichengxu(arrow); 
+		arrow = Chengxu(arrow); //进入 程序 子程序
+		arrow = Houjichengxu(arrow); //进入 后继程序 子程序
 
 	}
 	return arrow;
@@ -83,10 +85,11 @@ Token *Chengxu(Token *  arrow)
 			PFINFLp2->next = PFINFLp;
 			PFINFLp2 = PFINFLp2->next;
 			OFF = 0;
-			
+			//PFINFaddr++;
+			/*funcname = "main";*/
 			SEND("hanshu", "_", "_", "main");
-
 			//填写函数表
+
 			Next(infile);
 			arrow = arrow->next;
 			if (arrow->type == 38)//判断（
@@ -102,10 +105,11 @@ Token *Chengxu(Token *  arrow)
 					{
 						Next(infile);
 						arrow = arrow->next;
-						arrow = fuheyuju(arrow);
+						arrow = fuheyuju(arrow);//进入 复合语句 子程序
 						oldrange = rangenum;
 						rangenum = 0;
 						PFINFLp->OFF = OFF;
+						// SYNBLp->addr=OFF;
 						SEND("END", "_", "_", "_");
 						return  arrow;
 					}
@@ -116,143 +120,141 @@ Token *Chengxu(Token *  arrow)
 			else error();
 
 		}
-		else {
-			if (arrow->type == 0)//判断标识符
+		else if (arrow->type == 0)//判断标识符
+		{
+			SYNBLp = SYNBLHead[rangenum];
+			while (strcmp(SYNBLp->content, arrow->content) != 0)
 			{
-				SYNBLp = SYNBLHead[rangenum];
-				while (strcmp(SYNBLp->content, arrow->content) != 0)
-				{
-					SYNBLp = SYNBLp->next;
+				SYNBLp = SYNBLp->next;
+			}
+			if (SYNBLp->next != NULL) { printf("重复定义"); exit(0); }
+			SYNBLp->type = word;
+			SYNBLp->addr = OFF;
 
-				}
-				if (SYNBLp->next != NULL) { printf("重复定义"); exit(0); }
-				SYNBLp->type = word;
-				SYNBLp->addr = OFF;
+			Next(infile);
+			arrow = arrow->next;
+			if (arrow->type == 38)//判断（
+			{
+				funcname = SYNBLp->content;
+				SEND("hanshu", "_", "_", SYNBLp->content);
+				strcpy_s(SYNBLp->cat, "f");
+				rangenum = oldrange;
+				rangenum++;
+				initSYNBL(rangenum);
+				SYNBLp = SYNBLHead[rangenum];
+				initPARAML(PARAMp);
+				PFINFLp = new PFINFLTerm();
+				PFINFLp->content = funcname;
+				FN = 0;
+				PFINFLp->PARAM = PARAMp;
+
+
+
+				PFINFLp->ENTRY = -1;
+				PFINFLp->next = NULL;
+				PFINFLp2->next = PFINFLp;
+				PFINFLp2 = PFINFLp2->next;
+				OFF = 0;
+
+				//填写函数表
 				Next(infile);
 				arrow = arrow->next;
-				if (arrow->type == 38)//判断（
+				arrow = canshuliebiao(arrow);//进入 参数列表 子程序
+				if (arrow->type == 39)//判断）
 				{
-					funcname = SYNBLp->content;
-					SEND("hanshu", "_", "_", SYNBLp->content);
-					strcpy_s(SYNBLp->cat, "f");
-					rangenum = oldrange;
-					rangenum++;
-					initSYNBL(rangenum);
-					SYNBLp = SYNBLHead[rangenum];
-					initPARAML(PARAMp);
-					PFINFLp = new PFINFLTerm();
-					PFINFLp->content = funcname;
-					FN = 0;
-					PFINFLp->PARAM = PARAMp;
-
-
-
-					PFINFLp->ENTRY = -1;
-					PFINFLp->next = NULL;
-					PFINFLp2->next = PFINFLp;
-					PFINFLp2 = PFINFLp2->next;
-					OFF = 0;
-
-					//填写函数表
 					Next(infile);
 					arrow = arrow->next;
-					arrow = canshuliebiao(arrow);
-					if (arrow->type == 39)//判断）
+					if (arrow->type == 42)//判断{
 					{
 						Next(infile);
 						arrow = arrow->next;
-						if (arrow->type == 42)//判断{
+						arrow = fuheyuju(arrow);//进入 复合语句 子程序
+						oldrange = rangenum;
+						rangenum = 0;
+						PFINFLp->OFF = OFF;
+						PFINFLp->FN = FN;
+
+						SEND("END", "_", "_", "_");
+						return  arrow;
+					}
+					else error();
+				}
+				else error();
+			}
+			else {
+				if (arrow->type == 40)//判断[
+				{
+					strcpy_s(SYNBLp->cat, "a");
+					//SYNBLp->addr=++AINFaddr;
+					SYNBLp->addr = OFF;
+					AINFLp = new AINFLTerm();
+					AINFLp->CTP = word;
+					AINFLp->LOW = 0;
+					AINFLp->next = NULL;
+					AINFLp2->next = AINFLp;
+					AINFLp2 = AINFLp2->next;
+
+					//填写数组表
+					Next(infile);
+					arrow = arrow->next;
+					if (arrow->type == 3)//判断数字
+					{
+						AINFLp->UP = atoi(arrow->content);//数字写入up
+						if (AINFLp->CTP == "int") AINFLp->CLEN = 4 * AINFLp->UP;
+						if (AINFLp->CTP == "float") AINFLp->CLEN = 8 * AINFLp->UP;
+						if (AINFLp->CTP == "bool" || AINFLp->CTP == "char") AINFLp->CLEN = AINFLp->UP;
+						OFF = OFF + AINFLp->CLEN;
+						SYNBLp->addr = OFF;
+
+						Next(infile);
+						arrow = arrow->next;
+						if (arrow->type == 41)//判断]
 						{
 							Next(infile);
 							arrow = arrow->next;
-							arrow = fuheyuju(arrow);//进入 复合语句 子程序
-							oldrange = rangenum;
-							rangenum = 0;
-							PFINFLp->OFF = OFF;
-							PFINFLp->FN = FN;
+							arrow = shuzufuzhi(arrow);//进入 数组赋值语句 子程序
+							arrow = houjishuzufuzhi(arrow);//进入 后继数组赋值语句 子程序
 
-							SEND("END", "_", "_", "_");
-							return  arrow;
+							return arrow;
 						}
 						else error();
+
 					}
 					else error();
 				}
 				else {
-					if (arrow->type == 40)//判断[
+					if (arrow->type == 25)//判断=
 					{
-						strcpy_s(SYNBLp->cat, "a");
-						SYNBLp->addr = OFF;
-						AINFLp = new AINFLTerm();
-						AINFLp->CTP = word;
-						AINFLp->LOW = 0;
-						AINFLp->next = NULL;
-						AINFLp2->next = AINFLp;
-						AINFLp2 = AINFLp2->next;
-
-						//填写数组表
+						strcpy_s(SYNBLp->cat, "v");
 						Next(infile);
 						arrow = arrow->next;
-						if (arrow->type == 3)//判断数字
+						if (arrow->type == 1 || arrow->type == 2)
 						{
-							AINFLp->UP = atoi(arrow->content);//数字写入up
-							if (AINFLp->CTP == "int") AINFLp->CLEN = 4 * AINFLp->UP;
-							if (AINFLp->CTP == "float") AINFLp->CLEN = 8 * AINFLp->UP;
-							if (AINFLp->CTP == "bool" || AINFLp->CTP == "char") AINFLp->CLEN = AINFLp->UP;
-							OFF = OFF + AINFLp->CLEN;
-							SYNBLp->addr = OFF;
-
 							Next(infile);
 							arrow = arrow->next;
-							if (arrow->type == 41)//判断]
-							{
-								Next(infile);
-								arrow = arrow->next;
-								arrow = shuzufuzhi(arrow);//进入 数组赋值语句 子程序
-								arrow = houjishuzufuzhi(arrow);//进入 后继数组赋值语句 子程序
-
-								return arrow;
-							}
-							else error();
-
-						}
-						else error();
-					}
-					else {
-						if (arrow->type == 25)//判断=
-						{
-							strcpy_s(SYNBLp->cat, "v");
-							Next(infile);
-							arrow = arrow->next;
-							if (arrow->type == 1 || arrow->type == 2)
-							{
-								Next(infile);
-								arrow = arrow->next;
-								arrow = houjibianliangshengming(arrow);//进入 后继变量声明 子程序
-
-								return arrow;
-							}
-							else {
-								arrow = suanshubiaodashi(arrow);//进入 算术表达式 子程序
-								arrow = houjibianliangshengming(arrow);//进入 后继变量声明 子程序
-
-								return arrow;
-							}
-						}
-						else {
-							strcpy_s(SYNBLp->cat, "v");
 							arrow = houjibianliangshengming(arrow);//进入 后继变量声明 子程序
 
 							return arrow;
 						}
+						else {
+							arrow = suanshubiaodashi(arrow);//进入 算术表达式 子程序
+							arrow = houjibianliangshengming(arrow);//进入 后继变量声明 子程序
 
-					}//判断=
-				}//判断[
+							return arrow;
+						}
+					}
+					else {
+						strcpy_s(SYNBLp->cat, "v");
+						arrow = houjibianliangshengming(arrow);//进入 后继变量声明 子程序
 
-			}
-			else error();
+						return arrow;
+					}
+
+				}//判断=
+			}//判断[
 
 		}//判断标识符
+		else error();
 	}
 	else {
 		if (arrow->type == 5 || arrow->type == 9 || arrow->type == 11)//判断bool float char
@@ -286,6 +288,7 @@ Token *Chengxu(Token *  arrow)
 					SEND("hanshu", "_", "_", SYNBLp->content);
 					strcpy_s(SYNBLp->cat, "f");
 					SYNBLp->addr = OFF;
+					//SYNBLp->addr=++PFINFaddr;
 					SYNBLp->next = NULL;
 					rangenum = oldrange;
 					rangenum++;
@@ -420,4 +423,280 @@ Token *fuheyuju(Token *  arrow) //复合语句
 		return arrow;
 	}
 	else error();
+}
+
+Token *shuzufuzhi(Token* arrow)//数组赋值
+{
+	if (strcmp(arrow->content, "=") == 0)
+	{
+		Next(infile);
+		arrow = arrow->next;
+		if (strcmp(arrow->content, "{") == 0)
+		{
+			Next(infile);
+			arrow = arrow->next;
+			arrow = zhiliebiao(arrow);//值列表
+			if (strcmp(arrow->content, "}") == 0)
+			{
+				Next(infile);
+				arrow = arrow->next;
+			}
+			else {
+				error();
+			}
+		}
+		else {
+			error();
+		}
+	}
+	return arrow;
+}
+
+Token* zhiliebiao(Token* arrow)//值列表
+{
+	while (1)
+	{
+		if (arrow->type == 3)//判断是否是数字
+		{
+			Next(infile);
+			arrow = arrow->next;
+			if (strcmp(arrow->content, ",") == 0)
+			{
+				Next(infile);
+				arrow = arrow->next;
+			}
+			else {
+				break;
+			}
+		}
+		else {
+			error();
+		}
+	}
+	return arrow;
+}
+
+Token* suanshubiadashi(Token* arrow) {
+	arrow = suanshuyinzi(arrow);
+	while (1)
+	{
+		if (strcmp(arrow->content, "+") == 0)
+		{
+			Next(infile);
+			arrow = arrow->next;
+			arrow = suanshuxiang(arrow);
+			GEQ("+");
+		}
+		else if (strcmp(arrow->content, "-") == 0)
+		{
+			Next(infile);
+			arrow = arrow->next;
+			arrow = suanshuxiang(arrow);
+			GEQ("-");
+		}
+		else
+		{
+			break;
+		}
+	}
+	return arrow;
+
+}
+
+Token* suanshuxiang(Token* arrow)//算数项
+{
+	arrow = suanshuyinzi(arrow);//算数因子
+	while (1)
+	{
+		if (strcmp(arrow->content, "*") == 0)
+		{
+			Next(infile);
+			arrow = arrow->next;
+			arrow = suanshuyinzi(arrow);
+			GEQ("*");
+		}
+		else if (strcmp(arrow->content, "/") == 0)
+		{
+			Next(infile);
+			arrow = arrow->next;
+			arrow = suanshuyinzi(arrow);
+			GEQ("/");
+		}
+		else if (strcmp(arrow->content, "%") == 0)
+		{
+			Next(infile);
+			arrow = arrow->next;
+			arrow = suanshuyinzi(arrow);
+			GEQ("%");
+		}
+		else
+		{
+			break;
+		}
+	}
+	return arrow;
+}
+
+Token* suanshuyinzi(Token* arrow)//算数因子
+{
+	while (1) {
+		if (strcmp(arrow->content, "+") == 0)
+		{
+			Next(infile);
+			arrow = arrow->next;
+			arrow = suanshudanyuan(arrow);
+			GEQSingle("+");
+		}
+		else if (strcmp(arrow->content, "-") == 0)
+		{
+			Next(infile);
+			arrow = arrow->next;
+			arrow = suanshudanyuan(arrow);
+			GEQSingle("-");
+		}
+		else if (strcmp(arrow->content, "!") == 0)
+		{
+			Next(infile);
+			arrow = arrow->next;
+			arrow = suanshudanyuan(arrow);
+			GEQSingle("!");
+		}
+		else
+		{
+			break;
+		}
+	}/*while语句*/
+	return arrow;
+}
+
+Token* suanshudanyuan(Token* arrow)//算数单元
+{
+	string newString = "";
+	funcstring = "";
+	if (arrow->type == 0)//判断是否是标识符
+	{
+		SYNBLp = SYNBLHead[rangenum];
+		while (strcmp(SYNBLp->content, arrow->content) != 0 && SYNBLp->next != NULL)
+		{
+			SYNBLp = SYNBLp->next;
+		}
+		if (SYNBLp->type == " ")
+		{
+			SYNBLp = SYNBLHead[0];
+			while (strcmp(SYNBLp->content, arrow->content) != 0 && SYNBLp->next != NULL)
+			{
+				SYNBLp = SYNBLp->next;
+			}
+			if (SYNBLp->type == " " || strcmp(SYNBLp->content, arrow->content) != 0)
+			{
+				cout << "调用未定义变量" << endl; exit(0);
+			}
+		}
+
+		newString = arrow->content;
+		funcstring = arrow->content;
+		Next(infile);
+		arrow = arrow->next;
+		if (strcmp(arrow->content, "[") == 0)//判断是否是[
+		{
+			newString = newString + '[';
+			Next(infile);
+			arrow = arrow->next;
+			if (arrow->type == 3)//判断是否是数字
+			{
+				newString = newString + (arrow->content);
+				Next(infile);
+				arrow = arrow->next;
+				if (strcmp(arrow->content, "]") == 0)//判断是否是]
+				{
+					newString = newString + ']';
+					Next(infile);
+					arrow = arrow->next;
+				}
+				else
+				{
+					error();
+				}
+			}
+			else
+			{
+				error();
+			}
+		}
+
+		else
+
+		{
+			if (strcmp(arrow->content, "(") == 0)//判断是否是(
+			{
+				string funcflag = SYNBLp->content;
+
+				Next(infile);
+				arrow = arrow->next;
+				if (strcmp(arrow->content, ")") != 0)
+				{
+					SEND("temp", "_", "_", funcflag);
+					arrow = suanshubiaodashi(arrow);
+					SEND("xingcan", "_", "_", funcstring);
+					if (strcmp(arrow->content, ",") == 0)
+					{
+						do
+						{
+							Next(infile);
+							arrow = arrow->next;
+							arrow = suanshubiaodashi(arrow);
+							SEND("xingcan", "_", "_", funcstring);
+						} while (strcmp(arrow->content, ",") == 0);
+					}
+				}
+				//判断是否是,
+				if (strcmp(arrow->content, ")") == 0)//判断是否是)
+				{
+					SEND("diaoyong", "_", "_", funcflag);
+					Next(infile);
+					arrow = arrow->next;
+				}
+				else  error();
+
+
+			}
+		}
+
+
+	}
+	else if ((arrow->type == 1) || (arrow->type == 2) || (arrow->type == 3))//常量
+	{
+		newString = arrow->content;
+		funcstring = arrow->content;
+		Next(infile);
+		arrow = arrow->next;
+	}
+
+	else if (strcmp(arrow->content, "(") == 0)
+	{
+		Next(infile);
+		arrow = arrow->next;
+		arrow = luojiyuju(arrow);
+		if (strcmp(arrow->content, ")") == 0)
+		{
+			Next(infile);
+			arrow = arrow->next;
+			return arrow;
+		}
+		else
+		{
+			error();
+		}
+	}
+	else
+	{
+		error();
+	}
+	SEM.push(newString);
+	return arrow;
+}
+
+Token* yujuliebiao(Token* arrow) {
+
+
 }
