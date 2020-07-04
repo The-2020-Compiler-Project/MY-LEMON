@@ -43,7 +43,7 @@ struct DAGnode//DAG图的节点结构体
 	int ChildRight = -1;	//右后继
 	vector<string>SecondMark;//附加标记
 	string FirstMark;	//主标记
-	string s[4];
+	string s[4];		//为特殊四元式准备的数组
 };
 vector<DAGnode>DAG;
 
@@ -303,7 +303,7 @@ void DAGoutput()//重组四元式
 				}
 			}
 		}
-		else if(DAG[j].SecondMark.size()!=0 && (DAG[j].ChildLeft!=-1 || DAG[j].ChildRight != -1))//带附加标记，并且不为叶节点
+		else if(DAG[j].ChildLeft!=-1 || DAG[j].ChildRight != -1)//带附加标记，并且不为叶节点
 		{
 			if (DAG[j].ChildLeft != -1 && DAG[j].ChildRight != -1)//两个后继
 			{
@@ -323,18 +323,21 @@ void DAGoutput()//重组四元式
 				newqt.fourth = DAG[j].FirstMark;
 				NewQt.push_back(newqt);
 			}
-			if (InSymbleTerm(DAG[j].FirstMark))//主标记为非临时变量
+			if (!DAG[j].SecondMark.empty())//如果带有附加标记
 			{
-				for (int i = 0; i < DAG[j].SecondMark.size(); i++)//附加标志为非临时变量，则生成赋值四元式
+				if (InSymbleTerm(DAG[j].FirstMark))//主标记为非临时变量
 				{
-					if (InSymbleTerm(DAG[j].SecondMark[i]))//在附加标记里如果是非临时变量，则产生赋值四元式
+					for (int i = 0; i < DAG[j].SecondMark.size(); i++)//附加标志为非临时变量，则生成赋值四元式
 					{
-						QtTerm newqt;
-						newqt.first = "=";
-						newqt.second = DAG[j].FirstMark;
-						newqt.third = "_";
-						newqt.fourth = DAG[j].SecondMark[i];
-						NewQt.push_back(newqt);
+						if (InSymbleTerm(DAG[j].SecondMark[i]))//在附加标记里如果是非临时变量，则产生赋值四元式
+						{
+							QtTerm newqt;
+							newqt.first = "=";
+							newqt.second = DAG[j].FirstMark;
+							newqt.third = "_";
+							newqt.fourth = DAG[j].SecondMark[i];
+							NewQt.push_back(newqt);
+						}
 					}
 				}
 			}
@@ -359,9 +362,9 @@ void DivideBaseblock()//划分基本块
 	{	
 		if (Qt[end].first == "if" || Qt[end].first == "el" || Qt[end].first == "ie" || Qt[end].first == "wh" || Qt[end].first == "do" || Qt[end].first == "we")
 		{
-			DAGyouhua(begin, end);
+			DAGyouhua(begin, end - 1);
 			DAGoutput();
-			begin = end+1;
+			begin = end;
 		}
 	}
 	if (begin < end)
@@ -374,7 +377,7 @@ void DivideBaseblock()//划分基本块
 int main()
 {
 	string s[4];
-	for (int j = 0; j < 4; j++)
+	for (int j = 0; j < 2; j++)
 	{
 		for (int i = 0; i < 4; i++)
 		{
