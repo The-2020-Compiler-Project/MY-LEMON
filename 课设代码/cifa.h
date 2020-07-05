@@ -12,7 +12,7 @@ using namespace std;
 int static_iden = 0;
 
 const char* KT[] = { "void","char","short","int","long","float","double","bool","if","else","while","do","for","main","return" }; //关键字表
-const char* PT[] = { ">=","<=","==","!=",">","<","=","&&","||","!","+","-","*","/","%","<<",">>",",",";","(",")","[","]","{","}",".","#" };//界符表
+const char* PT[] = { ">=","<=","==","!=",">","<","=","&&","||","!","+","-","*","/","%","<<",">>",",",";","(",")","[","]","{","}",".","#","++","--" };//界符表
 
 
 struct Term
@@ -117,7 +117,7 @@ int seekKT(char* word)   //验证是否为关键字
 
 int seekPT(char* word)
 {
-    for (int i = 0; i < 27; i++)
+    for (int i = 0; i < 29; i++)
     {
         if (strcmp(word, PT[i]) == 0)
         {
@@ -389,6 +389,26 @@ void Next(FILE* infile)
                 ch = fgetc(infile);
             }
         }
+        else if (ch == '+')
+         {
+             ch = fgetc(infile);
+             if (ch == '+')
+             {
+                 array[i++] = ch;
+                 ch = fgetc(infile);
+             }
+               
+         }
+        else if (ch == '-')
+         {
+             ch = fgetc(infile);
+             if (ch == '-')
+             {
+                 array[i++] = ch;
+                 ch = fgetc(infile);
+             }
+
+         }
         else    ch = fgetc(infile);
         word = new char[i + 1];
         memcpy(word, array, i);
