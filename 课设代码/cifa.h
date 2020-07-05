@@ -190,6 +190,7 @@ int createSyml_Term(char* name, int type, int addr)
 void Next(FILE* infile)
 {
     char array[20];
+    char zhuanyi[5];
     char ch;
     char* word;
     int i = 0;
@@ -280,9 +281,17 @@ void Next(FILE* infile)
         if (ch == '\\')//检测到斜杠表示后面的是转义字符
         {
             array[i++] = ch;
+            zhuanyi[0] = ch;
             ch = fgetc(infile);
             if (ch == 'a' || ch == 'b' || ch == 'f' || ch == 'a' || ch == 'n' || ch == 'r' || ch == 't' || ch == 'v' || ch == '\\' || ch == '\'' || ch == '\"' || ch == '0')
+            {
                 array[i++] = ch;
+                zhuanyi[1] = ch;
+                word = new char[3];
+                memcpy(word, zhuanyi, 2);
+                word[2] = '\0';
+                createNewTerm(word, 1, -1);
+            }
             else
             {
                 cout << "转义符不存在" << endl;
