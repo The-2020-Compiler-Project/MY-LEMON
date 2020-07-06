@@ -67,7 +67,7 @@ Term* putongbianliangshengming(Term* arrow)//普通变量声明
     {
         SymL_p = SymL_Head[rangenum];
         while (strcmp(SymL_p->content, arrow->content) != 0) { SymL_p = SymL_p->next; }
-        if (SymL_p->next != NULL) { printf("重复定义"); exit(0); }
+        if (SymL_p->next != NULL) { logger("重复定义"); exit(0); }
         SymL_p->type = type;
         Next(infile);
         arrow = arrow->next;
@@ -118,7 +118,7 @@ Term* houjibianliangshengming(Term* arrow)//后继变量声明
     }
     else
     {
-        error();
+        logger("err");
     }
     return arrow;
 }
@@ -150,7 +150,7 @@ Term* canshushengming(Term* arrow)//参数申明
             SymL_p = SymL_Head[rangenum];
 
             while (strcmp(SymL_p->content, arrow->content) != 0) { SymL_p = SymL_p->next; }
-            if (SymL_p->next != NULL) { printf("重复定义"); exit(0); }
+            if (SymL_p->next != NULL) { logger("重复定义"); exit(0); }
             SymL_p->type = type;
             SymL_p->addr = OFF;
             PARAMp2->type = type;
@@ -188,12 +188,12 @@ Term* canshushengming(Term* arrow)//参数申明
         }
         else
         {
-            error();
+            logger("err");
         }
     }
     else
     {
-        error();
+        logger("err");
     }
     return arrow;
 }
