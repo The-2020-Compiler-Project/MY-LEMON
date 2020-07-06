@@ -2,9 +2,15 @@
 #include<iostream>
 #include <fstream>
 #include<string>
+#include<stack>
 #include "fuhaobiao.h"
+#include"Yuyi.h"
 
 using namespace std;
+
+string funcstring;
+stack<string> SEM;
+string funcname;
 
 FILE *infile;
 string word;
@@ -12,6 +18,10 @@ SYNBLTerm* SYNBLp;
 int  AINFaddr = 0;
 int  PFINFaddr = 0;
 int OFF = 0;
+int ARR[5] = { 0 };
+int g = 0;
+int UP;
+int FN = 0;
 AINFLTerm* AINFLp = AINFLHead;
 PARAMLTerm* PARAMp;
 PFINFLTerm* PFINFLp = PFINFLHead;
@@ -85,8 +95,6 @@ Token *Chengxu(Token *  arrow)
 			PFINFLp2->next = PFINFLp;
 			PFINFLp2 = PFINFLp2->next;
 			OFF = 0;
-			//PFINFaddr++;
-			/*funcname = "main";*/
 			SEND("hanshu", "_", "_", "main");
 			//填写函数表
 
@@ -109,7 +117,6 @@ Token *Chengxu(Token *  arrow)
 						oldrange = rangenum;
 						rangenum = 0;
 						PFINFLp->OFF = OFF;
-						// SYNBLp->addr=OFF;
 						SEND("END", "_", "_", "_");
 						return  arrow;
 					}
@@ -696,7 +703,295 @@ Token* suanshudanyuan(Token* arrow)//算数单元
 	return arrow;
 }
 
-Token* yujuliebiao(Token* arrow) {
+Token *yujuliebiao(Token*  arrow) //语句列表
+{
+	if (arrow->type == 12)//判断if
+	{
+		Next(infile);
+		arrow = arrow->next;
+		if (arrow->type == 38)//判断（
+		{
+			Next(infile);
+			arrow = arrow->next;
+			arrow = luojiyuju(arrow); //进入 逻辑语句 子程序
+			if (arrow->type == 39)//判断）
+			{
+				IF();//IF四元式生成
+				Next(infile);
+				arrow = arrow->next;
+				arrow = fuheyuju(arrow); //进入 复合语句 子程序
+				if (arrow->type == 13)//判断else
+				{
+					ELSE();//ELSE四元式生成
+					Next(infile);
+					arrow = arrow->next;
+					arrow = fuheyuju(arrow); //进入 复合语句 子程序
+					IFEND();//IFEND四元式生成
+					arrow = yujuliebiao(arrow); //进入 语句列表 子程序
+					return arrow;
+				}
+				else {
+					IFEND();  //IFEND四元式生成
+					arrow = yujuliebiao(arrow); //进入 语句列表 子程序
+					return arrow;
+				}
+			}
+			else error();
+		}
+		else error();
+	}
+	else {
+		if (arrow->type == 14)//判断while
+		{
+			WHILE();//生成WHILE四元式
+			Next(infile);
+			arrow = arrow->next;
+			if (arrow->type == 38)//判断（
+			{
+				Next(infile);
+				arrow = arrow->next;
+				arrow = luojiyuju(arrow); //进入 逻辑语句 子程序
+				if (arrow->type == 39)//判断）
+				{
+					DO();//生成DO四元式
+					Next(infile);
+					arrow = arrow->next;
+					{
+						arrow = fuheyuju(arrow); //进入 复合语句 子程序
+						WHILEEND();//生成WHILEEND四元式
+						arrow = yujuliebiao(arrow); //进入 语句列表 子程序
+						return arrow;
+					}
+				}
+				else error();
+			}
+			else error();
+		}
+		else {
+			if (arrow->type == 18)//判断return
+			{
+				Next(infile);
+				arrow = arrow->next;
+				if (arrow->type == 0)//判断标识符
+				{
+					SYNBLp = SYNBLHead[rangenum];
+					while (strcmp(SYNBLp->content, arrow->content) != 0 && SYNBLp->next != NULL)
+					{
+						SYNBLp = SYNBLp->next;
+					}
+					if (SYNBLp->type == " ")
+					{
+						SYNBLp = SYNBLHead[0];
+						while (strcmp(SYNBLp->content, arrow->content) != 0 && SYNBLp->next != NULL)
+						{
+							SYNBLp = SYNBLp->next;
+						}
+						if (SYNBLp->type == " " || strcmp(SYNBLp->content, arrow->content) != 0)
+						{
+							printf("调用未定义变量"); exit(0);
+						}
+					}
+					if (strcmp(SYNBLp->cat, "v") == 0 || strcmp(SYNBLp->cat, "p") == 0)
+					{
+						SEND("re", "_", SYNBLp->content, funcname);
+					}
+					Next(infile);
+					arrow = arrow->next;
+					if (arrow->type == 37)//判断;
+					{
+						Next(infile);
+						arrow = arrow->next;
+						arrow = yujuliebiao(arrow); //进入 语句列表 子程序
+						return arrow;
+					}
+					else error();
+				}
+				else {
+					if (arrow->type == 1 || arrow->type == 2 || arrow->type == 3)//判断常量
+					{
+						SEND("re", "_", arrow->content, funcname);
+						Next(infile);
+						arrow = arrow->next;
+						if (arrow->type == 37)//判断;
+						{
+							Next(infile);
+							arrow = arrow->next;
+							arrow = yujuliebiao(arrow); //进入 语句列表 子程序
+							return arrow;
+						}
+						else error();
+					}
+					else error();
+				}
+			}
+			else {
+				if (arrow->type == 0)//判断标识符
+				{
+					string newString = "";
+					newString = arrow->content;
+					while (arrow->type == 0)//判断标识符
+					{
+						SYNBLp = SYNBLHead[rangenum];
+						while (strcmp(SYNBLp->content, arrow->content) != 0 && SYNBLp->next != NULL)
+						{
+							SYNBLp = SYNBLp->next;
+						}
+						if (SYNBLp->type == " ")
+						{
+							SYNBLp = SYNBLHead[0];
+							while (strcmp(SYNBLp->content, arrow->content) != 0 && SYNBLp->next != NULL)
+							{
+								SYNBLp = SYNBLp->next;
+							}
+							if (SYNBLp->type == " " || strcmp(SYNBLp->content, arrow->content) != 0)
+							{
+								printf("调用未定义变量"); exit(0);
+							}
+						}
 
+						Next(infile);
+						arrow = arrow->next;
+						if (arrow->type == 40)//判断[
+						{
+							newString = newString + '[';
+							Next(infile);
+							arrow = arrow->next;
+							if (arrow->type == 3)//判断数字
+							{
+								newString = newString + (arrow->content);
+								Next(infile);
+								arrow = arrow->next;
+							}
+							else error();
+							if (arrow->type == 41)//判断]
+							{
+								newString = newString + ']';
+								Next(infile);
+								arrow = arrow->next;
+							}
+							else error();
+						}
+						if (arrow->type == 25)//判断=
+						{
+							SEM.push(newString);
+							Next(infile);
+							arrow = arrow->next;
+							if (arrow->type == 1 || arrow->type == 2)//判断常量
+							{
+								Next(infile);
+								arrow = arrow->next;
+							}
+							else { arrow = suanshubiaodashi(arrow); }//进入 算术表达式 子程序
+							ASSI(newString);
+							if (arrow->type != 36)//判断,
+								break;
+						}
+						else error();
+					}
+					if (arrow->type == 37)//判断;
+					{
+						Next(infile);
+						arrow = arrow->next;
+						arrow = yujuliebiao(arrow); //进入 语句列表 子程序
+						return arrow;
+					}
+					else  error();
+				}
+
+				if (arrow->type == 7 || arrow->type == 5 || arrow->type == 9 || arrow->type == 11)//判断char int bool float
+				{
+					word = arrow->content;//读type准备写入符号总表
+					Next(infile);
+					arrow = arrow->next;
+					if (arrow->type == 0)//判断标识符
+					{
+						SYNBLp = SYNBLHead[rangenum];
+						while (strcmp(SYNBLp->content, arrow->content) != 0) { SYNBLp = SYNBLp->next; }
+						if (SYNBLp->next != NULL) { printf("重复定义"); exit(0); }
+						SYNBLp->type = word;
+						Next(infile);
+						arrow = arrow->next;
+						if (arrow->type == 40)//判断[
+						{
+							strcpy_s(SYNBLp->cat, "a");
+							SYNBLp->addr = OFF;
+							//SYNBLp->addr=++AINFaddr;
+							AINFLp = new AINFLTerm();
+							AINFLp->CTP = word;
+							AINFLp->LOW = 0;
+							AINFLp->next = NULL;
+							AINFLp2->next = AINFLp;
+							AINFLp2 = AINFLp2->next;
+							//填写数组表
+							Next(infile);
+							arrow = arrow->next;
+							if (arrow->type == 3)//判断数字
+							{
+								AINFLp->UP = atoi(arrow->content);//数字写入up
+								if (AINFLp->CTP == "int") AINFLp->CLEN = 4 * AINFLp->UP;
+								if (AINFLp->CTP == "float") AINFLp->CLEN = 8 * AINFLp->UP;
+								if (AINFLp->CTP == "bool" || AINFLp->CTP == "char") AINFLp->CLEN = AINFLp->UP;
+								OFF = OFF + AINFLp->CLEN;
+								Next(infile);
+								arrow = arrow->next;
+								if (arrow->type == 41)//判断]
+								{
+									Next(infile);
+									arrow = arrow->next;
+									arrow = shuzufuzhi(arrow);//进入 数组赋值语句 子程序
+									arrow = houjishuzufuzhi(arrow);//进入 后继数组赋值语句 子程序
+									arrow = yujuliebiao(arrow); //进入 语句列表 子程序
+									return arrow;
+								}
+								else error();
+							}
+							else error();
+						}
+						else {
+							if (arrow->type == 25)//判断=
+							{
+								strcpy_s(SYNBLp->cat, "v");
+								SYNBLp->addr = OFF;
+								if (word == "int") OFF = OFF + 4;
+								if (word == "float")  OFF = OFF + 8;
+								if (word == "bool" || AINFLp->CTP == "char")  OFF = OFF + 1;
+								SYNBLp->addr = OFF;                              //地址指向vall
+								Next(infile);
+								arrow = arrow->next;
+								if (arrow->type == 1 || arrow->type == 2)//判断常量
+								{
+									Next(infile);
+									arrow = arrow->next;
+									arrow = houjibianliangshengming(arrow); //进入 后继变量声明 子程序
+									arrow = yujuliebiao(arrow); //进入 语句列表 子程序
+									return arrow;
+								}
+								else {
+									arrow = suanshubiaodashi(arrow);//进入 算术表达式 子程序
+									arrow = houjibianliangshengming(arrow); //进入 后继变量声明 子程序
+									arrow = yujuliebiao(arrow); //进入 语句列表 子程序
+									return arrow;
+								}
+							}
+							else {
+								strcpy_s(SYNBLp->cat, "v");
+								SYNBLp->addr = OFF;
+								if (word == "int") OFF = OFF + 4;
+								if (word == "float")  OFF = OFF + 8;
+								if (word == "bool" || word == "char")  OFF = OFF + 1;                         //地址指向vall
+								arrow = houjibianliangshengming(arrow); //进入 后继变量声明 子程序
+								arrow = yujuliebiao(arrow); //进入 语句列表 子程序
+								return arrow;
+							}
+
+						}
+					}
+					else error();
+
+				}
+				else return arrow;
+			}
+		}
+	}
 
 }
