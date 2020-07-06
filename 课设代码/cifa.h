@@ -12,7 +12,7 @@ using namespace std;
 int static_iden = 0;
 
 const char* KT[] = { "void","char","short","int","long","float","double","bool","if","else","while","do","for","main","return" }; //关键字表
-const char* PT[] = { ">=","<=","==","!=",">","<","=","&&","||","!","+","-","*","/","%","<<",">>",",",";","(",")","[","]","{","}",".","#" };//界符表
+const char* PT[] = { ">=","<=","==","!=",">","<","=","&&","||","!","+","-","*","/","%","<<",">>",",",";","(",")","[","]","{","}",".","#","++","--" };//界符表
 
 
 struct Term
@@ -117,7 +117,7 @@ int seekKT(char* word)   //验证是否为关键字
 
 int seekPT(char* word)
 {
-    for (int i = 0; i < 27; i++)
+    for (int i = 0; i < 29; i++)
     {
         if (strcmp(word, PT[i]) == 0)
         {
@@ -190,6 +190,7 @@ int createSyml_Term(char* name, int type, int addr)
 void Next(FILE* infile)
 {
     char array[20];
+    char zhuanyi[5];
     char ch;
     char* word;
     int i = 0;
@@ -280,9 +281,17 @@ void Next(FILE* infile)
         if (ch == '\\')//检测到斜杠表示后面的是转义字符
         {
             array[i++] = ch;
+            zhuanyi[0] = ch;
             ch = fgetc(infile);
             if (ch == 'a' || ch == 'b' || ch == 'f' || ch == 'a' || ch == 'n' || ch == 'r' || ch == 't' || ch == 'v' || ch == '\\' || ch == '\'' || ch == '\"' || ch == '0')
+            {
                 array[i++] = ch;
+                zhuanyi[1] = ch;
+                word = new char[3];
+                memcpy(word, zhuanyi, 2);
+                word[2] = '\0';
+                createNewTerm(word, 1, -1);
+            }
             else
             {
                 cout << "转义符不存在" << endl;
@@ -380,6 +389,26 @@ void Next(FILE* infile)
                 ch = fgetc(infile);
             }
         }
+        else if (ch == '+')
+         {
+             ch = fgetc(infile);
+             if (ch == '+')
+             {
+                 array[i++] = ch;
+                 ch = fgetc(infile);
+             }
+               
+         }
+        else if (ch == '-')
+         {
+             ch = fgetc(infile);
+             if (ch == '-')
+             {
+                 array[i++] = ch;
+                 ch = fgetc(infile);
+             }
+
+         }
         else    ch = fgetc(infile);
         word = new char[i + 1];
         memcpy(word, array, i);
