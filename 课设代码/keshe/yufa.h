@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 #include<iostream>
 #include <fstream>
 #include<string>
@@ -51,8 +52,10 @@ Term* luojixiang(Term* arrow);
 Term* luojiyinzi1(Term* arrow);
 Term* luojiyinzi2(Term* arrow);
 Term* houjishuzufuzhi(Term* arrow);
+Term* shuru(Term* arrow);
+Term* shuchu(Term* arrow);
 
-//文法产生式1
+
 Term* Start(Term* arrow)
 {
 	Next(infile);
@@ -64,7 +67,7 @@ Term* Start(Term* arrow)
 
 Term* Houjichengxu(Term* arrow)
 {
-	if (arrow->type == 45);//判断#,45为“#”在Token表中的顺序号码
+	if (arrow->type == 47);//判断#,45为“#”在Token表中的顺序号码
 	else {
 		arrow = Chengxu(arrow); //进入 程序 子程序
 		arrow = Houjichengxu(arrow); //进入 后继程序 子程序
@@ -102,11 +105,11 @@ Term* Chengxu(Term* arrow)
 
 			Next(infile);
 			arrow = arrow->next;
-			if (arrow->type == 38)//判断（
+			if (arrow->type == 40)//判断（
 			{
 				Next(infile);
 				arrow = arrow->next;
-				if (arrow->type == 39)//判断）
+				if (arrow->type == 41)//判断）
 				{
 
 					Next(infile);
@@ -142,7 +145,7 @@ Term* Chengxu(Term* arrow)
 
 			Next(infile);
 			arrow = arrow->next;
-			if (arrow->type == 38)//判断（
+			if (arrow->type == 40)//判断（
 			{
 				funcname = SymL_p->name;
 				SEND("hanshu", "_", "_", SymL_p->name);
@@ -169,7 +172,7 @@ Term* Chengxu(Term* arrow)
 				Next(infile);
 				arrow = arrow->next;
 				arrow = canshuliebiao(arrow);//进入 参数列表 子程序
-				if (arrow->type == 39)//判断）
+				if (arrow->type == 41)//判断）
 				{
 					Next(infile);
 					arrow = arrow->next;
@@ -191,7 +194,7 @@ Term* Chengxu(Term* arrow)
 				else logger("err");
 			}
 			else {
-				if (arrow->type == 40)//判断[
+				if (arrow->type == 42)//判断[
 				{
 					strcpy_s(SymL_p->cat, "a");
 					//SYNBLp->addr=++AINFaddr;
@@ -217,7 +220,7 @@ Term* Chengxu(Term* arrow)
 
 						Next(infile);
 						arrow = arrow->next;
-						if (arrow->type == 41)//判断]
+						if (arrow->type == 43)//判断]
 						{
 							Next(infile);
 							arrow = arrow->next;
@@ -232,7 +235,7 @@ Term* Chengxu(Term* arrow)
 					else logger("err");
 				}
 				else {
-					if (arrow->type == 25)//判断=
+					if (arrow->type == 27)//判断=
 					{
 						strcpy_s(SymL_p->cat, "v");
 						Next(infile);
@@ -287,7 +290,7 @@ Term* Chengxu(Term* arrow)
 				SymL_p->type = type;
 				Next(infile);
 				arrow = arrow->next;
-				if (arrow->type == 38)//判断（
+				if (arrow->type == 40)//判断（
 				{
 					SymL_p->addr = off;
 					if (type == "int") off = off + 4;
@@ -318,7 +321,7 @@ Term* Chengxu(Term* arrow)
 					Next(infile);
 					arrow = arrow->next;
 					arrow = canshuliebiao(arrow);//进入 参数列表 子程序
-					if (arrow->type == 39)//判断）
+					if (arrow->type == 41)//判断）
 					{
 						Next(infile);
 						arrow = arrow->next;
@@ -332,7 +335,7 @@ Term* Chengxu(Term* arrow)
 					else logger("err");
 				}
 				else {
-					if (arrow->type == 40)//判断[
+					if (arrow->type == 42)//判断[
 					{
 						Array_List* AINFLp = new Array_List();
 						AINFLp->tp = type;
@@ -352,7 +355,7 @@ Term* Chengxu(Term* arrow)
 							off = off + AINFLp->len;
 							Next(infile);
 							arrow = arrow->next;
-							if (arrow->type == 41)//判断]
+							if (arrow->type == 43)//判断]
 							{
 								Next(infile);
 								arrow = arrow->next;
@@ -367,7 +370,7 @@ Term* Chengxu(Term* arrow)
 						else logger("err");
 					}//判断[
 					else {
-						if (arrow->type == 25)//判断=
+						if (arrow->type == 27)//判断=
 						{
 							strcpy_s(SymL_p->cat, "v");
 							SymL_p->addr = off;
@@ -418,14 +421,14 @@ Term* Chengxu(Term* arrow)
 
 Term* fuheyuju(Term* arrow) //复合语句
 {
-	if (arrow->type == 42)//判断{
+	if (arrow->type == 44)//判断{
 	{
 		Next(infile);
 		arrow = arrow->next;
 	}
 	else logger("err");
 	arrow = yujuliebiao(arrow); //进入 语句列表 子程序
-	if (arrow->type == 43)//判断}
+	if (arrow->type == 45)//判断}
 	{
 		Next(infile);
 		arrow = arrow->next;
@@ -709,12 +712,12 @@ Term* yujuliebiao(Term* arrow) //语句列表
 	{
 		Next(infile);
 		arrow = arrow->next;
-		if (arrow->type == 38)//判断（
+		if (arrow->type == 40)//判断（
 		{
 			Next(infile);
 			arrow = arrow->next;
 			arrow = luojiyuju(arrow); //进入 逻辑语句 子程序
-			if (arrow->type == 39)//判断）
+			if (arrow->type == 41)//判断）
 			{
 				IF();//IF四元式生成
 				Next(infile);
@@ -746,12 +749,12 @@ Term* yujuliebiao(Term* arrow) //语句列表
 			WHILE();//生成WHILE四元式
 			Next(infile);
 			arrow = arrow->next;
-			if (arrow->type == 38)//判断（
+			if (arrow->type == 40)//判断（
 			{
 				Next(infile);
 				arrow = arrow->next;
 				arrow = luojiyuju(arrow); //进入 逻辑语句 子程序
-				if (arrow->type == 39)//判断）
+				if (arrow->type == 41)//判断）
 				{
 					DO();//生成DO四元式
 					Next(infile);
@@ -797,7 +800,7 @@ Term* yujuliebiao(Term* arrow) //语句列表
 					}
 					Next(infile);
 					arrow = arrow->next;
-					if (arrow->type == 37)//判断;
+					if (arrow->type == 39)//判断;
 					{
 						Next(infile);
 						arrow = arrow->next;
@@ -812,7 +815,7 @@ Term* yujuliebiao(Term* arrow) //语句列表
 						SEND("re", "_", arrow->name, funcname);
 						Next(infile);
 						arrow = arrow->next;
-						if (arrow->type == 37)//判断;
+						if (arrow->type == 39)//判断;
 						{
 							Next(infile);
 							arrow = arrow->next;
@@ -851,7 +854,7 @@ Term* yujuliebiao(Term* arrow) //语句列表
 
 						Next(infile);
 						arrow = arrow->next;
-						if (arrow->type == 40)//判断[
+						if (arrow->type == 42)//判断[
 						{
 							newString = newString + '[';
 							Next(infile);
@@ -863,7 +866,7 @@ Term* yujuliebiao(Term* arrow) //语句列表
 								arrow = arrow->next;
 							}
 							else logger("err");
-							if (arrow->type == 41)//判断]
+							if (arrow->type == 43)//判断]
 							{
 								newString = newString + ']';
 								Next(infile);
@@ -871,7 +874,7 @@ Term* yujuliebiao(Term* arrow) //语句列表
 							}
 							else logger("err");
 						}
-						if (arrow->type == 25)//判断=
+						if (arrow->type == 27)//判断=
 						{
 							SEM.push(newString);
 							Next(infile);
@@ -883,12 +886,12 @@ Term* yujuliebiao(Term* arrow) //语句列表
 							}
 							else { arrow = suanshubiaodashi(arrow); }//进入 算术表达式 子程序
 							ASSI(newString);
-							if (arrow->type != 36)//判断,
+							if (arrow->type != 38)//判断,
 								break;
 						}
 						else logger("err");
 					}
-					if (arrow->type == 37)//判断;
+					if (arrow->type == 39)//判断;
 					{
 						Next(infile);
 						arrow = arrow->next;
@@ -987,7 +990,19 @@ Term* yujuliebiao(Term* arrow) //语句列表
 						}
 					}
 					else logger("err");
-
+				}
+				if (arrow->type == 19 || arrow->type == 20)
+				{
+					arrow = shuchu(arrow);
+					arrow = shuru(arrow);
+					if (arrow->type == 39)//判断;
+					{
+						Next(infile);
+						arrow = arrow->next;
+						arrow = yujuliebiao(arrow); //进入 语句列表 子程序
+						return arrow;
+					}
+					else { logger("err"); }
 				}
 				else return arrow;
 			}
@@ -1036,7 +1051,6 @@ Term* putongbianliangshengming(Term* arrow)//普通变量声明
 	// SYNBLp->addr=OFF;                                               //地址指向vall
 	return arrow;
 }
-
 Term* houjibianliangshengming(Term* arrow)//后继变量声明
 {
 	if (strcmp(arrow->name, ";") == 0)
@@ -1324,6 +1338,51 @@ Term* houjishuzufuzhi(Term* arrow)//后继数组赋值
 	else
 	{
 		logger("err");
+	}
+	return arrow;
+}
+
+Term* shuchu(Term* arrow) {
+	if (arrow->type == 19)/*判断cout*/
+	{
+		Next(infile);
+		arrow = arrow->next;
+		if (arrow->type == 36)/*判断"<<"*/
+		{
+			Next(infile);
+			arrow = arrow->next;
+			if (arrow->type == 0)
+			{
+				SEND("cout", "_", "_", arrow->name);
+				Next(infile);
+				arrow = arrow->next;
+			}
+			else { logger("err"); }
+		}
+		else { logger("err"); }
+	}
+
+	return arrow;
+}
+
+Term* shuru(Term* arrow) {
+	if (arrow->type == 20)/*判断cin*/
+	{
+		Next(infile);
+		arrow = arrow->next;
+		if (arrow->type == 37)/*判断">>"*/
+		{
+			Next(infile);
+			arrow = arrow->next;
+			if (arrow->type == 0)
+			{
+				SEND("cin", "_", "_", arrow->name);
+				Next(infile);
+				arrow = arrow->next;
+			}
+			else { logger("err"); }
+		}
+		else { logger("err"); }
 	}
 	return arrow;
 }
