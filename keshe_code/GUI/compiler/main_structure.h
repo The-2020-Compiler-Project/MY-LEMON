@@ -13,7 +13,7 @@ struct Term
 };
 Term* Head;  //token表
 
-FILE* infile = fopen("data.txt","r");
+FILE* infile = fopen("./data.txt","r");
 stack<string> SEM;
 int pass;
 string type;
@@ -40,5 +40,5 @@ struct QtTerm
 	string fourth;
 	bool fourthac;
 };
-vector<QtTerm>Qt;
+vector<QtTerm>Quaternary;
 vector<QtTerm>NewQt;//新四元式向量

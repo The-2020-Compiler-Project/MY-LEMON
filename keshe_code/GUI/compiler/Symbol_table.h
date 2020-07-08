@@ -2,6 +2,7 @@
 #include "string"
 #include <fstream>
 #include<vector>
+#include<stack>
 using namespace std;
 int rangenum = 0;
 

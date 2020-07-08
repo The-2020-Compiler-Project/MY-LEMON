@@ -46,17 +46,17 @@ bool Find(string string)//判断能否找到string在s里
 
 void Pre_process()//对四元式预处理
 {
-	for (int i = 0; i < Qt.size(); i++)
+    for (int i = 0; i < Quaternary.size(); i++)
 	{
-		if (Qt[i].first == "temp")
-			s.push_back(Qt[i].fourth);
-		if (Qt[i].first == "=")//是赋值语句
+        if (Quaternary[i].first == "temp")
+            s.push_back(Quaternary[i].fourth);
+        if (Quaternary[i].first == "=")//是赋值语句
 		{
-			if (Find(Qt[i].second) && Qt[i].third=="_")//且在s中能找到
+            if (Find(Quaternary[i].second) && Quaternary[i].third=="_")//且在s中能找到
 			{
-				Qt[i].second = Qt[i].second + DoubleToString(fun_value);
-				Qt[i].secondac = true;
-				fun_value++;
+                Quaternary[i].second = Quaternary[i].second + DoubleToString(fun_value);
+                Quaternary[i].secondac = true;
+                fun_value++;
 			}
 		}
 	}
@@ -153,23 +153,23 @@ void DAGyouhua(int begin, int end)//优化建图
 	Pre_process();
 	for (int i = begin; i <= end; i++)
 	{
-		if (Qt[i].first == "=")
+        if (Quaternary[i].first == "=")
 		{
-			if (IsDefined_FS(Qt[i].second) != -1)//该被定义过
+            if (IsDefined_FS(Quaternary[i].second) != -1)//该被定义过
 			{
-				DAG[IsDefined_FS(Qt[i].second)].SecondMark.push_back(Qt[i].fourth);//加入附加标志
+                DAG[IsDefined_FS(Quaternary[i].second)].SecondMark.push_back(Quaternary[i].fourth);//加入附加标志
 
 			}
 			else//没被定义，则建节点
 			{
 				DAGnode dagnode;
-				dagnode.FirstMark = Qt[i].second;
-				dagnode.SecondMark.push_back(Qt[i].fourth);
+                dagnode.FirstMark = Quaternary[i].second;
+                dagnode.SecondMark.push_back(Quaternary[i].fourth);
 				DAG.push_back(dagnode);
 			}
-			if (Qt[i].secondac != true)//不是函数返回值标记
+            if (Quaternary[i].secondac != true)//不是函数返回值标记
 			{
-				IsDefined_S(Qt[i].fourth, IsDefined_FS(Qt[i].second));//被定义在附加标记里过，则删去那个标记
+                IsDefined_S(Quaternary[i].fourth, IsDefined_FS(Quaternary[i].second));//被定义在附加标记里过，则删去那个标记
 			}
 			else
 			{
@@ -178,62 +178,62 @@ void DAGyouhua(int begin, int end)//优化建图
 				{
 					for (int j = DAG[k].SecondMark.size() - 1; j >= 0; j--)
 					{
-						if (DAG[k].SecondMark[j] == Qt[i].fourth && !IsNumber(DAG[k].FirstMark))//找到之前的定义且主标记不为数字
+                        if (DAG[k].SecondMark[j] == Quaternary[i].fourth && !IsNumber(DAG[k].FirstMark))//找到之前的定义且主标记不为数字
 							DAG[k].SecondMark.erase(DAG[k].SecondMark.begin() + j);
 					}
 				}
 			}
 		}
-		else if (Qt[i].first == "*" || Qt[i].first == "/" || Qt[i].first == "%" || Qt[i].first == "||" || Qt[i].first == "&&"
-			|| Qt[i].first == "==" || Qt[i].first == "!=" || Qt[i].first == ">=" || Qt[i].first == ">" || Qt[i].first == "<="
-			|| Qt[i].first == "<" || Qt[i].first == "+" || (Qt[i].first == "-" && Qt[i].third != "_"))//双目运算符
+        else if (Quaternary[i].first == "*" || Quaternary[i].first == "/" || Quaternary[i].first == "%" || Quaternary[i].first == "||" || Quaternary[i].first == "&&"
+            || Quaternary[i].first == "==" || Quaternary[i].first == "!=" || Quaternary[i].first == ">=" || Quaternary[i].first == ">" || Quaternary[i].first == "<="
+            || Quaternary[i].first == "<" || Quaternary[i].first == "+" || (Quaternary[i].first == "-" && Quaternary[i].third != "_"))//双目运算符
 		{
-			if (IsNumber(Qt[i].second) && IsNumber(Qt[i].third))//运算对象同为数字
+            if (IsNumber(Quaternary[i].second) && IsNumber(Quaternary[i].third))//运算对象同为数字
 			{
-				double a = StringToDouble(Qt[i].second);
-				double b = StringToDouble(Qt[i].third);
-				double result = Compute(a, Qt[i].first, b);
+                double a = StringToDouble(Quaternary[i].second);
+                double b = StringToDouble(Quaternary[i].third);
+                double result = Compute(a, Quaternary[i].first, b);
 				if (IsDefined_FS(DoubleToString(result)) != -1)//该被定义过
 				{
-					DAG[IsDefined_FS(DoubleToString(result))].SecondMark.push_back(Qt[i].fourth);
+                    DAG[IsDefined_FS(DoubleToString(result))].SecondMark.push_back(Quaternary[i].fourth);
 				}
 				else//没被定义，则建节点
 				{
 					DAGnode dagnode;
 					dagnode.FirstMark = DoubleToString(result);
-					dagnode.SecondMark.push_back(Qt[i].fourth);
+                    dagnode.SecondMark.push_back(Quaternary[i].fourth);
 					DAG.push_back(dagnode);
 				}
-				IsDefined_S(Qt[i].fourth, IsDefined_FS(Qt[i].second));//如果forth在之前的附加标记，则删去
+                IsDefined_S(Quaternary[i].fourth, IsDefined_FS(Quaternary[i].second));//如果forth在之前的附加标记，则删去
 			}
 			else
 			{
 				int left = -2, right = -2, flag = 0;
-				if (IsDefined_FS(Qt[i].second) != -1)
+                if (IsDefined_FS(Quaternary[i].second) != -1)
 				{
-					left = IsDefined_FS(Qt[i].second);
+                    left = IsDefined_FS(Quaternary[i].second);
 				}
 				else //没被定义过，建点
 				{
 					DAGnode dagnode;
-					dagnode.FirstMark = Qt[i].second;
+                    dagnode.FirstMark = Quaternary[i].second;
 					DAG.push_back(dagnode);
 				}
-				if (IsDefined_FS(Qt[i].third) != -1)//右孩子被定义过
+                if (IsDefined_FS(Quaternary[i].third) != -1)//右孩子被定义过
 				{
-					right = IsDefined_FS(Qt[i].third);
+                    right = IsDefined_FS(Quaternary[i].third);
 				}
 				else
 				{
 					DAGnode dagnode;
-					dagnode.FirstMark = Qt[i].third;
+                    dagnode.FirstMark = Quaternary[i].third;
 					DAG.push_back(dagnode);
 				}
 				for (int j = DAG.size() - 1; j >= 0; j--)
 				{
-					if (DAG[j].operate == Qt[i].first && DAG[j].ChildLeft == left && DAG[j].ChildRight == right)//有公共表达式
+                    if (DAG[j].operate == Quaternary[i].first && DAG[j].ChildLeft == left && DAG[j].ChildRight == right)//有公共表达式
 					{
-						DAG[j].SecondMark.push_back(Qt[i].fourth);
+                        DAG[j].SecondMark.push_back(Quaternary[i].fourth);
 						flag = 1;
 						break;
 					}
@@ -241,33 +241,33 @@ void DAGyouhua(int begin, int end)//优化建图
 				if (flag != 1)//无公共表达式，则执行此
 				{
 					DAGnode dagnode;
-					dagnode.FirstMark = Qt[i].fourth;
-					dagnode.operate = Qt[i].first;
-					dagnode.ChildLeft = IsDefined_FS(Qt[i].second);
-					dagnode.ChildRight = IsDefined_FS(Qt[i].third);
+                    dagnode.FirstMark = Quaternary[i].fourth;
+                    dagnode.operate = Quaternary[i].first;
+                    dagnode.ChildLeft = IsDefined_FS(Quaternary[i].second);
+                    dagnode.ChildRight = IsDefined_FS(Quaternary[i].third);
 					DAG.push_back(dagnode);
 				}
-				IsDefined_S(Qt[i].fourth, IsDefined_FS(Qt[i].second));//forth之前附加标志定义过，则删除之
+                IsDefined_S(Quaternary[i].fourth, IsDefined_FS(Quaternary[i].second));//forth之前附加标志定义过，则删除之
 			}
 		}
-		else if (Qt[i].first == "!" || (Qt[i].first == "-" && Qt[i].third == "_"))//单目运算符
+        else if (Quaternary[i].first == "!" || (Quaternary[i].first == "-" && Quaternary[i].third == "_"))//单目运算符
 		{
 			int left = -2, flag = 0;
-			if (IsDefined_FS(Qt[i].second) != -1)//如果存在
+            if (IsDefined_FS(Quaternary[i].second) != -1)//如果存在
 			{
-				left = IsDefined_FS(Qt[i].second);
+                left = IsDefined_FS(Quaternary[i].second);
 			}
 			else//不存在，建结点
 			{
 				DAGnode dagnode;
-				dagnode.FirstMark = Qt[i].second;
+                dagnode.FirstMark = Quaternary[i].second;
 				DAG.push_back(dagnode);
 			}
 			for (int j = DAG.size() - 1; j >= 0; j--)
 			{
-				if (DAG[j].operate == Qt[i].first && DAG[j].ChildLeft == left)//有公共表达式
+                if (DAG[j].operate == Quaternary[i].first && DAG[j].ChildLeft == left)//有公共表达式
 				{
-					DAG[j].SecondMark.push_back(Qt[i].fourth);
+                    DAG[j].SecondMark.push_back(Quaternary[i].fourth);
 					flag = 1;
 					break;
 				}
@@ -275,22 +275,22 @@ void DAGyouhua(int begin, int end)//优化建图
 			if (flag != 1)
 			{
 				DAGnode dagnode;
-				dagnode.FirstMark = Qt[i].fourth;
-				dagnode.ChildLeft = IsDefined_FS(Qt[i].second);
-				dagnode.operate = Qt[i].first;
+                dagnode.FirstMark = Quaternary[i].fourth;
+                dagnode.ChildLeft = IsDefined_FS(Quaternary[i].second);
+                dagnode.operate = Quaternary[i].first;
 				DAG.push_back(dagnode);
 			}
-			IsDefined_S(Qt[i].fourth, IsDefined_FS(Qt[i].second));
+            IsDefined_S(Quaternary[i].fourth, IsDefined_FS(Quaternary[i].second));
 		}
-		else if (Qt[i].first == "hanshu" || Qt[i].first == "re" || Qt[i].first == "diaoyong" || Qt[i].first == "wh" ||
-			Qt[i].first == "xingcan" || Qt[i].first == "canshu" || Qt[i].first == "END" || Qt[i].first == "if" ||
-			Qt[i].first == "el" || Qt[i].first == "do" || Qt[i].first == "we" || Qt[i].first == "ie" || Qt[i].first == "temp")
+        else if (Quaternary[i].first == "hanshu" || Quaternary[i].first == "re" || Quaternary[i].first == "diaoyong" || Quaternary[i].first == "wh" ||
+            Quaternary[i].first == "xingcan" || Quaternary[i].first == "canshu" || Quaternary[i].first == "END" || Quaternary[i].first == "if" ||
+            Quaternary[i].first == "el" || Quaternary[i].first == "do" || Quaternary[i].first == "we" || Quaternary[i].first == "ie" || Quaternary[i].first == "temp")
 		{
 			DAGnode dagnode;
-			dagnode.s[0] = Qt[i].first;
-			dagnode.s[1] = Qt[i].second;
-			dagnode.s[2] = Qt[i].third;
-			dagnode.s[3] = Qt[i].fourth;
+            dagnode.s[0] = Quaternary[i].first;
+            dagnode.s[1] = Quaternary[i].second;
+            dagnode.s[2] = Quaternary[i].third;
+            dagnode.s[3] = Quaternary[i].fourth;
 			DAG.push_back(dagnode);
 		}
 	}
@@ -375,9 +375,9 @@ void DivideBaseblock()//划分基本块
 {
 	Pre_process();
 	int begin = 0, end = 0;//基本块的开始与结束
-	for (end; end < Qt.size(); end++)
+    for (end; end < Quaternary.size(); end++)
 	{
-		if (Qt[end].first == "if" || Qt[end].first == "el" || Qt[end].first == "ie" || Qt[end].first == "wh" || Qt[end].first == "do" || Qt[end].first == "we")
+        if (Quaternary[end].first == "if" || Quaternary[end].first == "el" || Quaternary[end].first == "ie" || Quaternary[end].first == "wh" || Quaternary[end].first == "do" || Quaternary[end].first == "we")
 		{
 			DAGyouhua(begin, end - 1);
 			DAGoutput();
@@ -404,9 +404,9 @@ void NewQtToFile()
 void QtToFile()
 {
 	ofstream file("siyusnshi.txt");
-	for (int i = 0; i < Qt.size(); i++)
+    for (int i = 0; i < Quaternary.size(); i++)
 	{
-		file << Qt[i].first << '\t' << Qt[i].second << '\t' << Qt[i].third << '\t' << Qt[i].fourth << endl;
+        file << Quaternary[i].first << '\t' << Quaternary[i].second << '\t' << Quaternary[i].third << '\t' << Quaternary[i].fourth << endl;
 	}
 	file.close();
 }

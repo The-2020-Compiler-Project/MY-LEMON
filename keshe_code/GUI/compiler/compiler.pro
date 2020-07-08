@@ -20,7 +20,21 @@ SOURCES += \
     mainwindow.cpp
 
 HEADERS += \
-    mainwindow.h
+    ../../keshe_2.0/Object_code.h \
+    ../../keshe_2.0/Symbol_table.h \
+    ../../keshe_2.0/cifa.h \
+    ../../keshe_2.0/main_structure.h \
+    ../../keshe_2.0/youhua.h \
+    ../../keshe_2.0/yufa.h \
+    ../../keshe_2.0/yuyi.h \
+    Object_code.h \
+    Symbol_table.h \
+    cifa.h \
+    main_structure.h \
+    mainwindow.h \
+    youhua.h \
+    yufa.h \
+    yuyi.h
 
 FORMS += \
     mainwindow.ui

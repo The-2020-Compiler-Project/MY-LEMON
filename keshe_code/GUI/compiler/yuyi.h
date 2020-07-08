@@ -15,7 +15,7 @@ void SEND(string first, string second, string third, string fourth)
 	qt.second = second;
 	qt.third = third;
 	qt.fourth = fourth;
-	Qt.push_back(qt);
+    Quaternary.push_back(qt);
 }
 
 void IF()
