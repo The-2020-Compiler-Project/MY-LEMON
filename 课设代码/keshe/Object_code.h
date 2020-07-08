@@ -35,6 +35,7 @@ stack<string> ifelseSTK;    //ifelse标号栈
 stack<string> whileSTK;     //while标号栈
 stack<string> xingcanSTK;   //形参栈，用来管理形参
 stack<string> funcSTK;      //函数名栈，标记当前处理的函数
+int SIoffset = 0;
 
 
 //汇编语句标号
@@ -215,9 +216,9 @@ void load_DX(int rdl, int& DIoffset, int offset)        //储存DX内容到内存
 	{
 		if (FUNCoffsetTable.count(NewQt[rdl].fourth) == 0)
 		{
-			CODE("MOV", "[SI+" + to_string(DIoffset + offset) + "],", "DX");
-			DIoffset += offset;
-			FUNCoffsetTable.insert(pair<string, int>(NewQt[rdl].fourth, DIoffset));
+			CODE("MOV", "[SI+" + to_string(SIoffset + offset) + "],", "DX");
+			SIoffset += offset;
+			FUNCoffsetTable.insert(pair<string, int>(NewQt[rdl].fourth, SIoffset));
 		}
 		else
 		{
@@ -513,7 +514,7 @@ void objectcode_asm(int dstart, int dend)
 
 	int offset = 2;
 	int DIoffset = 0;
-	int SIoffset = 0;
+
 	//funcSTK.push("main");
 	CODE("DSEG", "SEGMENT", " ");
 	CODE("DATA", "DW", "100 DUP(?)");
@@ -561,7 +562,7 @@ void objectcode_asm(int dstart, int dend)
 			}
 			else
 			{
-				int add = FUNCoffsetTable.find(NewQt[rdl].fourth)->second;
+				int add = FUNCoffsetTable.find(NewQt[i].fourth)->second;
 				CODE("MOV", "[SI+" + to_string(add) + "],", "DX");
 			}
 			DX = NewQt[i].fourth;
@@ -571,7 +572,7 @@ void objectcode_asm(int dstart, int dend)
 		{
 			if ((DX != " ") && (rdl != -1) && (NewQt[rdl].fourthac))
 			{
-				//load_DX(rdl, DIoffset, offset);
+				load_DX(rdl, DIoffset, offset);
 			}   //可能bug
 			DX = " ";
 			if (isNum(NewQt[i].third))
