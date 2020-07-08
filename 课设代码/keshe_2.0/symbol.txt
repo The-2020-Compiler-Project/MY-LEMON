@@ -1,0 +1,17 @@
+全局符号表
+	name	type	cat
+
+现行函数符号表1
+	name	type	cat	addr
+	a	int	v
+	b	int	v
+	c	int	v
+	d	int	v
+
+数组表
+	length	type	low	up
+
+函数表
+	name	level	off	fn
+	main	0	16	0
+
