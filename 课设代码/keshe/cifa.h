@@ -13,7 +13,7 @@
 using namespace std;
 int static_iden = 0;
 
-const char* KT[] = { "void","char","short","int","long","float","double","bool","if","else","while","do","for","main","return" }; //关键字表
+const char* KT[] = { "void","char","short","int","long","float","double","bool","if","else","while","do","for","main","return","cout","cin" }; //关键字表
 const char* PT[] = { ">=","<=","==","!=",">","<","=","&&","||","!","+","-","*","/","%","<<",">>",",",";","(",")","[","]","{","}",".","#","++","--" };//界符表
 
 void initTerm()
@@ -80,7 +80,7 @@ void initPARAML(Parameter_List* ParaL_Head)
 
 int seekKT(char* type)   //验证是否为关键字
 {
-	for (int i = 0; i < 15; i++)
+	for (int i = 0; i < 17; i++)
 	{
 		if (strcmp(type, KT[i]) == 0)
 		{
@@ -97,7 +97,7 @@ int seekPT(char* type)
 	{
 		if (strcmp(type, PT[i]) == 0)
 		{
-			return i + 19;
+			return i + 21;
 		}
 	}
 	return -99;
