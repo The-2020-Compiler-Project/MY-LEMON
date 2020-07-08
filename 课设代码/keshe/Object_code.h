@@ -196,18 +196,28 @@ void active_info()//基本块内填写活跃信息
 
 void load_DX(int rdl, int& DIoffset, int offset)        //储存DX内容到内存
 {
-	if (offsetTable.count(NewQt[rdl].fourth) == 0)
+	if (funcSTK.top() == "main")
 	{
-		CODE("MOV", "[DI+" + to_string(DIoffset + offset) + "],", "DX");
-		DIoffset += offset;
-		offsetTable.insert(pair<string, int>(NewQt[rdl].fourth, DIoffset));
-	}
-	else
-	{
-		if (funcSTK.top() == "main")
+
+		if (offsetTable.count(NewQt[rdl].fourth) == 0)
+		{
+			CODE("MOV", "[DI+" + to_string(DIoffset + offset) + "],", "DX");
+			DIoffset += offset;
+			offsetTable.insert(pair<string, int>(NewQt[rdl].fourth, DIoffset));
+		}
+		else
 		{
 			int add = offsetTable.find(NewQt[rdl].fourth)->second;
 			CODE("MOV", "[DI+" + to_string(add) + "],", "DX");
+		}
+	}
+	else
+	{
+		if (FUNCoffsetTable.count(NewQt[rdl].fourth) == 0)
+		{
+			CODE("MOV", "[SI+" + to_string(DIoffset + offset) + "],", "DX");
+			DIoffset += offset;
+			FUNCoffsetTable.insert(pair<string, int>(NewQt[rdl].fourth, DIoffset));
 		}
 		else
 		{
