@@ -244,18 +244,20 @@ void obcode_DX(string DX, int i, int& DIoffset, int rdl)    //将second送DX
 	{
 		if (NewQt[i].secondac)
 		{
-			CODE("MOV", "[DI+" + to_string(DIoffset + offset) + "],", "DX");
+			load_DX(rdl, DIoffset, offset);
+			/*CODE("MOV", "[DI+" + to_string(DIoffset + offset) + "],", "DX");
 			DIoffset += offset;
-			offsetTable.insert(pair<string, int>(NewQt[rdl].fourth, DIoffset));
+			offsetTable.insert(pair<string, int>(NewQt[rdl].fourth, DIoffset));*/
 		}
 	}
 	else
 	{
 		if ((rdl != -1) && (NewQt[rdl].fourthac))
 		{
-			CODE("MOV", "[DI+" + to_string(DIoffset + offset) + "],", "DX");
+			load_DX(rdl, DIoffset, offset);
+			/*CODE("MOV", "[DI+" + to_string(DIoffset + offset) + "],", "DX");
 			DIoffset += offset;
-			offsetTable.insert(pair<string, int>(NewQt[rdl].fourth, DIoffset));
+			offsetTable.insert(pair<string, int>(NewQt[rdl].fourth, DIoffset));*/
 		}
 		if (isNum(NewQt[i].second))
 		{
@@ -291,12 +293,12 @@ void obcode_DXBX(string DX, int i, int& DIoffset, int rdl) //将second送DX，将thi
 			if (funcSTK.top() == "main")
 			{
 				int add = offsetTable.find(NewQt[i].second)->second;
-				CODE("MOV", "DX,", "[DI + " + to_string(add) + "]");
+				CODE("MOV", "DX,", "[DI+" + to_string(add) + "]");
 			}
 			else
 			{
 				int add = FUNCoffsetTable.find(NewQt[i].second)->second;
-				CODE("MOV", "DX,", "[SI + " + to_string(add) + "]");
+				CODE("MOV", "DX,", "[SI+" + to_string(add) + "]");
 			}
 		}
 		if (isNum(NewQt[i].third))
@@ -308,12 +310,12 @@ void obcode_DXBX(string DX, int i, int& DIoffset, int rdl) //将second送DX，将thi
 			if (funcSTK.top() == "main")
 			{
 				int add = offsetTable.find(NewQt[i].third)->second;
-				CODE("MOV", "BX,", "[DI + " + to_string(add) + "]");
+				CODE("MOV", "BX,", "[DI+" + to_string(add) + "]");
 			}
 			else
 			{
 				int add = FUNCoffsetTable.find(NewQt[i].third)->second;
-				CODE("MOV", "BX,", "[SI + " + to_string(add) + "]");
+				CODE("MOV", "BX,", "[SI+" + to_string(add) + "]");
 			}
 		}
 	}
@@ -332,12 +334,12 @@ void obcode_DXBX(string DX, int i, int& DIoffset, int rdl) //将second送DX，将thi
 			if (funcSTK.top() == "main")
 			{
 				int add = offsetTable.find(NewQt[i].third)->second;
-				CODE("MOV", "BX,", "[DI + " + to_string(add) + "]");
+				CODE("MOV", "BX,", "[DI+" + to_string(add) + "]");
 			}
 			else
 			{
 				int add = FUNCoffsetTable.find(NewQt[i].third)->second;
-				CODE("MOV", "BX,", "[SI + " + to_string(add) + "]");
+				CODE("MOV", "BX,", "[SI+" + to_string(add) + "]");
 			}
 		}
 	}
@@ -623,6 +625,7 @@ void objectcode_asm(int dstart, int dend)
 			}
 			CODE("CALL", NewQt[i].fourth, "");
 			CODE("MOV", "DX,", "RESULT");
+			load_DX(i, DIoffset, offset);
 			DX = NewQt[i].fourth;
 			rdl = i;
 		}
@@ -648,11 +651,28 @@ void objectcode_asm(int dstart, int dend)
 		}
 		else if (NewQt[i].first == "=")                //单目 赋值
 		{
-			obcode_DX(DX, i, DIoffset, rdl);
-
-			CODE("MOV", "[DI+" + to_string(DIoffset + offset) + "],", "DX");
-			DIoffset += offset;
-			offsetTable.insert(pair<string, int>(NewQt[i].fourth, DIoffset));
+			//obcode_DX(DX, i, DIoffset, rdl);
+			if (isNum(NewQt[i].second))
+			{
+				CODE("MOV", "DX,", NewQt[i].second);
+			}
+			else
+			{
+				if (funcSTK.top() == "main")
+				{
+					int add = offsetTable.find(NewQt[i].second)->second;
+					CODE("MOV", "DX,", "[DI+" + to_string(add) + "]");
+				}
+				else
+				{
+					int add = FUNCoffsetTable.find(NewQt[i].second)->second;
+					CODE("MOV", "DX,", "[SI+" + to_string(add) + "]");
+				}
+			}
+			load_DX(i, DIoffset, offset);
+			//CODE("MOV", "[DI+" + to_string(DIoffset + offset) + "],", "DX");
+			//DIoffset += offset;
+			//offsetTable.insert(pair<string, int>(NewQt[i].fourth, DIoffset));
 
 			DX = NewQt[i].fourth;
 			rdl = i;
