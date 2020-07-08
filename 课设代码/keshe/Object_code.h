@@ -195,6 +195,35 @@ void active_info()//基本块内填写活跃信息
 	}
 }
 
+void OUTPUTproc()
+{
+	CODE("OUTPUT", "PROC", "");
+	CODE("XOR", "DX,", "DX");
+	CODE("XOR", "CX,", "CX");
+	CODE("MOV", "AX,", "RESULT");
+	CODE("MOV", "BX,", "0AH");
+	CODE("OP1:", "", "");
+	CODE("DIV", "BX", "");
+	CODE("INC", "CL", "");
+	CODE("ADD", "DX,", "30H");
+	CODE("PUSH", "DX", "");
+	CODE("XOR", "DX,", "DX");
+	CODE("CMP", "AX,", "0AH");
+	CODE("JNL", "OP1", "");
+	CODE("MOV", "DL,", "AL");
+	CODE("ADD", "DL,", "30H");
+	CODE("MOV", "AH,", "02H");
+	CODE("INT", "21H", "");
+	CODE("OP2:", "", "");
+	CODE("POP", "DX", "");
+	CODE("INT", "21H", "");
+	CODE("SUB", "CL,", "1");
+	CODE("CMP", "CL,", "0");
+	CODE("JNZ", "OP2", "");
+	CODE("RETU:", "RET", "");
+	CODE("OUTPUT", "ENDP", "");
+}
+
 void load_DX(int rdl, int& DIoffset, int offset)        //储存DX内容到内存
 {
 	if (funcSTK.top() == "main")
@@ -527,6 +556,7 @@ void objectcode_asm(int dstart, int dend)
 	CODE("SSEG", "ENDS", " ");
 	CODE("CSEG", "SEGMENT", "");
 	CODE("", "ASSUME", "CS:CSEG,DS:DSEG,SS:SSEG,ES:DSEG");
+	OUTPUTproc();
 
 	for (i = dstart; i < dend; i++)
 	{
