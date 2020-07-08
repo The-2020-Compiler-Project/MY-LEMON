@@ -4,6 +4,7 @@
 #include<vector>
 #include"main_structure.h"
 #include"yufa.h"
+#include"youhua.h"
 using namespace std;
 
 

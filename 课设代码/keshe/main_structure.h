@@ -13,7 +13,6 @@ struct Term
 };
 Term* Head;  //token±í
 
-
 FILE* infile = fopen("data.txt","r");
 stack<string> SEM;
 int pass;
@@ -28,6 +27,7 @@ int  Func_addr = 0;
 Symbol_List* SymL_p;
 int off = 0;
 
+double fun_value = 0;
 int t_value = 0;
 struct QtTerm
 {

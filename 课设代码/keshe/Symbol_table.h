@@ -57,22 +57,22 @@ void Print_Table()
 	ofstream file("symbol.txt");
 	SymL_ptr = SymL_Head[0]; //打印符号表
 	file << "全局符号表" << endl;
-	file << " " << "name" << " "  << "type" << " " << "cat" << endl;
+	file << '\t' << "name" << '\t' << "type" << '\t' << "cat" << endl;
 	while (SymL_ptr->next != NULL)
 	{
 		SymL_ptr = SymL_ptr->next;
-		file << " " << SymL_ptr->name << " " << SymL_ptr->type << " " << SymL_ptr->cat << endl;
+		file << '\t' << SymL_ptr->name << '\t' << SymL_ptr->type << '\t' << SymL_ptr->cat << endl;
 	}
 	file << endl;
 	int i = 1;
 	while (SymL_Head[i] != NULL && SymL_Head[i]->next != NULL) {
 		SymL_ptr = SymL_Head[i];
 		file << "现行函数符号表" << i << endl; //打印每个函数的符号表
-		file << " " << "name" << " " << "type" << " " << "cat" << " " << "addr" << endl;
+		file << '\t' << "name" << '\t' << "type" << '\t' << "cat" << '\t' << "addr" << endl;
 		while (SymL_ptr->next != NULL)
 		{
 			SymL_ptr = SymL_ptr->next;
-			file << " " << SymL_ptr->name << " " << SymL_ptr->type << " " << SymL_ptr->cat << endl;
+			file << '\t' << SymL_ptr->name << '\t' << SymL_ptr->type << '\t' << SymL_ptr->cat << endl;
 		}
 		file << endl;
 		FuncL_ptr = FuncL_Head;
@@ -80,19 +80,19 @@ void Print_Table()
 	}
 	ArrL_ptr = ArrL_Head;   //打印数组表
 	file << "数组表" << endl;
-	file << " " << "length" << " " << "type" << " " << "low" << " " << "up" << endl;
+	file << '\t' << "length" << '\t' << "type" << '\t' << "low" << '\t' << "up" << endl;
 	while (ArrL_ptr->next != NULL)
 	{
 		ArrL_ptr = ArrL_ptr->next;
-		file << " " << ArrL_ptr->len << " " << ArrL_ptr->tp << " " << ArrL_ptr->low << " " << ArrL_ptr->up << endl;
+		file << '\t' << ArrL_ptr->len << '\t' << ArrL_ptr->tp << '\t' << ArrL_ptr->low << '\t' << ArrL_ptr->up << endl;
 	}
 	file << endl;
 	file << "函数表" << endl;  //打印函数表
-	file << " " << "name" << " " << "level" << " " << "off" << " " << "fn" << endl;
+	file << '\t' << "name" << '\t' << "level" << '\t' << "off" << '\t' << "fn" << endl;
 	while (FuncL_ptr->next != NULL)
 	{
 		FuncL_ptr = FuncL_ptr->next;
-		file << " " << FuncL_ptr->name << " " << FuncL_ptr->level << " " << FuncL_ptr->off << " " << FuncL_ptr->fn << endl;
+		file << '\t' << FuncL_ptr->name << '\t' << FuncL_ptr->level << '\t' << FuncL_ptr->off << '\t' << FuncL_ptr->fn << endl;
 	}
 	file << endl;
 	file.close();

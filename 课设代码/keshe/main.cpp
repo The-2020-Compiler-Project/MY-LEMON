@@ -27,10 +27,11 @@ int main()
 	arrow = Start(arrow);
 	cout << "语法分析通过" << endl;
 	Print_Table();
+	QtToFile();//四元式输出到文件
 	DivideBaseblock();//优化
+	NewQtToFile();//优化四元式输出到文件
 	active_info();
 	objectcode_asm(0, NewQt.size());       //汇编代码生成
 	printtoken();//token输出
-	NewQtToFile();//优化四元式输出到文件
 	obcode_to_file();//汇编输出到文件
 }

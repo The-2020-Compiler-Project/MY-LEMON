@@ -548,34 +548,31 @@ Term* suanshuxiang(Term* arrow)//算数项
 
 Term* suanshuyinzi(Term* arrow)//算数因子
 {
-	while (1) {
-		if (strcmp(arrow->name, "+") == 0)
-		{
-			Next(infile);
-			arrow = arrow->next;
-			arrow = suanshudanyuan(arrow);
-			GEQSingle("+");
-		}
-		else if (strcmp(arrow->name, "-") == 0)
-		{
-			Next(infile);
-			arrow = arrow->next;
-			arrow = suanshudanyuan(arrow);
-			GEQSingle("-");
-		}
-		else if (strcmp(arrow->name, "!") == 0)
-		{
-			Next(infile);
-			arrow = arrow->next;
-			arrow = suanshudanyuan(arrow);
-			GEQSingle("!");
-		}
-		else
-		{
-			arrow = suanshudanyuan(arrow);
-			break;
-		}
-	}/*while语句*/
+	if (strcmp(arrow->name, "+") == 0)
+	{
+		Next(infile);
+		arrow = arrow->next;
+		arrow = suanshudanyuan(arrow);
+		GEQSingle("+");
+	}
+	else if (strcmp(arrow->name, "-") == 0)
+	{
+		Next(infile);
+		arrow = arrow->next;
+		arrow = suanshudanyuan(arrow);
+		GEQSingle("-");
+	}
+	else if (strcmp(arrow->name, "!") == 0)
+	{
+		Next(infile);
+		arrow = arrow->next;
+		arrow = suanshudanyuan(arrow);
+		GEQSingle("!");
+	}
+	else
+	{
+		arrow = suanshudanyuan(arrow);
+	}
 	return arrow;
 }
 

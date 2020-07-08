@@ -16,6 +16,7 @@ struct DAGnode//DAG图的节点结构体
 	string s[4];		//为特殊四元式准备的数组
 };
 vector<DAGnode>DAG;
+vector<string>s;//存放函数返回值变量名
 
 double StringToDouble(string s)
 {
@@ -31,6 +32,34 @@ string DoubleToString(double n)
 	stringstream ss;
 	ss << n;
 	return ss.str();
+}
+
+bool Find(string string)//判断能否找到string在s里
+{
+	for (int i = 0; i < s.size(); i++)
+	{
+		if (s[i] == string)
+			return true;
+	}
+	return false;
+}
+
+void Pre_process()//对四元式预处理
+{
+	for (int i = 0; i < Qt.size(); i++)
+	{
+		if (Qt[i].first == "temp")
+			s.push_back(Qt[i].fourth);
+		if (Qt[i].first == "=")//是赋值语句
+		{
+			if (Find(Qt[i].second) && Qt[i].third=="_")//且在s中能找到
+			{
+				Qt[i].second = Qt[i].second + DoubleToString(fun_value);
+				Qt[i].secondac = true;
+				fun_value++;
+			}
+		}
+	}
 }
 
 bool IsNumber(string s)//判断是否为数字
@@ -121,13 +150,15 @@ void SecondToFirst()//把主标记换成非临时变量
 
 void DAGyouhua(int begin, int end)//优化建图
 {
+	Pre_process();
 	for (int i = begin; i <= end; i++)
 	{
 		if (Qt[i].first == "=")
 		{
 			if (IsDefined_FS(Qt[i].second) != -1)//该被定义过
 			{
-				DAG[IsDefined_FS(Qt[i].second)].SecondMark.push_back(Qt[i].fourth);
+				DAG[IsDefined_FS(Qt[i].second)].SecondMark.push_back(Qt[i].fourth);//加入附加标志
+
 			}
 			else//没被定义，则建节点
 			{
@@ -136,7 +167,22 @@ void DAGyouhua(int begin, int end)//优化建图
 				dagnode.SecondMark.push_back(Qt[i].fourth);
 				DAG.push_back(dagnode);
 			}
-			IsDefined_S(Qt[i].fourth, IsDefined_FS(Qt[i].second));
+			if (Qt[i].secondac != true)//不是函数返回值标记
+			{
+				IsDefined_S(Qt[i].fourth, IsDefined_FS(Qt[i].second));//被定义在附加标记里过，则删去那个标记
+			}
+			else
+			{
+				int n = 0;
+				for (int k = DAG.size() - 2; k >= 0; k--)
+				{
+					for (int j = DAG[k].SecondMark.size() - 1; j >= 0; j--)
+					{
+						if (DAG[k].SecondMark[j] == Qt[i].fourth && !IsNumber(DAG[k].FirstMark))//找到之前的定义且主标记不为数字
+							DAG[k].SecondMark.erase(DAG[k].SecondMark.begin() + j);
+					}
+				}
+			}
 		}
 		else if (Qt[i].first == "*" || Qt[i].first == "/" || Qt[i].first == "%" || Qt[i].first == "||" || Qt[i].first == "&&"
 			|| Qt[i].first == "==" || Qt[i].first == "!=" || Qt[i].first == ">=" || Qt[i].first == ">" || Qt[i].first == "<="
@@ -327,6 +373,7 @@ void DAGoutput()//重组四元式
 
 void DivideBaseblock()//划分基本块
 {
+	Pre_process();
 	int begin = 0, end = 0;//基本块的开始与结束
 	for (end; end < Qt.size(); end++)
 	{
@@ -350,6 +397,16 @@ void NewQtToFile()
 	for (int i = 0; i < NewQt.size(); i++) 
 	{
 		file <<NewQt[i].first << '\t' << NewQt[i].second << '\t' << NewQt[i].third << '\t' << NewQt[i].fourth<< endl;
+	}
+	file.close();
+}
+
+void QtToFile()
+{
+	ofstream file("siyusnshi.txt");
+	for (int i = 0; i < Qt.size(); i++)
+	{
+		file << Qt[i].first << '\t' << Qt[i].second << '\t' << Qt[i].third << '\t' << Qt[i].fourth << endl;
 	}
 	file.close();
 }

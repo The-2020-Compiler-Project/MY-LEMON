@@ -1,20 +1,13 @@
-int max(int a,int b,int c)
-{
-if(a>b)
-{
-return a;
-}
-else
-{
-return b;
-}
-}
+int max(int x,int y)
+{return x;}
 int main()
 {
 int a,b,c,d;
-a=4;
-b=5;
-c=6;
-d=max(a,b,c);
+b=2;
+a=3;
+c=4;
+d=5;
+a=max(a,b);
+a=max(c,d);
 }
 #
