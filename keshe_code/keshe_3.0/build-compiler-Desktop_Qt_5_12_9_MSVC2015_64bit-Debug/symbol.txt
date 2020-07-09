@@ -1,0 +1,25 @@
+全局符号表
+	name	type	cat
+	max	int	f
+
+现行函数符号表1
+	name	type	cat	addr
+	x	int	p
+	y	int	p
+
+现行函数符号表2
+	name	type	cat	addr
+	a	int	v
+	b	int	v
+	c	int	v
+	d	int	v
+	max	 	 
+
+数组表
+	length	type	low	up
+
+函数表
+	name	level	off	fn
+	max	0	8	2
+	main	0	16	0
+

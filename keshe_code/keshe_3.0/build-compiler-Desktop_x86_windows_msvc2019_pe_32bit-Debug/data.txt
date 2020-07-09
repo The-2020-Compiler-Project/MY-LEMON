@@ -1,0 +1,11 @@
+int max(int x,int y){return x;}
+void main()
+{
+int a,b,c,d;
+a=4;
+b=5;
+c=6;
+a=max(a,c);
+a=max(a,b);
+}
+#

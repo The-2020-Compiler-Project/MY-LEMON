@@ -914,7 +914,7 @@ Term* yujuliebiao(Term* arrow) //语句列表
 						SymL_p->type = type;
 						Next(infile);
 						arrow = arrow->next;
-						if (arrow->type == 40)//判断[
+						if (arrow->type == 42)//判断[
 						{
 							strcpy_s(SymL_p->cat, "a");
 							SymL_p->addr = off;
@@ -937,7 +937,7 @@ Term* yujuliebiao(Term* arrow) //语句列表
 								off = off + AINFLp->len;
 								Next(infile);
 								arrow = arrow->next;
-								if (arrow->type == 41)//判断]
+								if (arrow->type == 43)//判断]
 								{
 									Next(infile);
 									arrow = arrow->next;
@@ -991,7 +991,7 @@ Term* yujuliebiao(Term* arrow) //语句列表
 					}
 					else logger("err");
 				}
-				if (arrow->type == 19 || arrow->type == 20)
+				if (arrow->type == 19 || arrow->type == 20 )
 				{
 					arrow = shuchu(arrow);
 					arrow = shuru(arrow);
@@ -1002,7 +1002,7 @@ Term* yujuliebiao(Term* arrow) //语句列表
 						arrow = yujuliebiao(arrow); //进入 语句列表 子程序
 						return arrow;
 					}
-					else { logger("err"); }
+					else{ logger("err"); }
 				}
 				else return arrow;
 			}
@@ -1361,7 +1361,7 @@ Term* shuchu(Term* arrow) {
 		}
 		else { logger("err"); }
 	}
-
+	
 	return arrow;
 }
 
