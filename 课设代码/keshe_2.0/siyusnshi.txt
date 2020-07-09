@@ -1,7 +1,0 @@
-hanshu	_	_	main
-=	4	_	a
-=	5	_	b
-=	6	_	c
-cin	_	_	a
-cout	_	_	c
-END	_	_	_
