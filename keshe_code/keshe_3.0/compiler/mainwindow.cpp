@@ -133,8 +133,7 @@ bool MainWindow::filesave(){
     }
     else{
         source = ui->textEdit->toPlainText();
-        QStringToTxt(source,("./data0.txt"));
-        //DeNotes();
+        QStringToTxt(source,("./data.txt"));
         return true;
     }
 }
