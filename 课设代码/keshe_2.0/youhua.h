@@ -50,6 +50,13 @@ void Pre_process()//对四元式预处理
 	{
 		if (Qt[i].first == "temp")
 			s.push_back(Qt[i].fourth);
+		if (Qt[i].first == "diaoyong")
+		{
+			if (Find(Qt[i].fourth))
+			{
+				Qt[i].fourth = Qt[i].fourth + DoubleToString(fun_value);
+			}
+		}
 		if (Qt[i].first == "=")//是赋值语句
 		{
 			if (Find(Qt[i].second) && Qt[i].third=="_")//且在s中能找到
@@ -284,7 +291,8 @@ void DAGyouhua(int begin, int end)//优化建图
 		}
 		else if (Qt[i].first == "hanshu" || Qt[i].first == "re" || Qt[i].first == "diaoyong" || Qt[i].first == "wh" ||
 			Qt[i].first == "xingcan" || Qt[i].first == "canshu" || Qt[i].first == "END" || Qt[i].first == "if" ||
-			Qt[i].first == "el" || Qt[i].first == "do" || Qt[i].first == "we" || Qt[i].first == "ie" || Qt[i].first == "temp")
+			Qt[i].first == "el" || Qt[i].first == "do" || Qt[i].first == "we" || Qt[i].first == "ie" || Qt[i].first == "temp"
+			|| Qt[i].first == "cin" || Qt[i].first == "cout")
 		{
 			DAGnode dagnode;
 			dagnode.s[0] = Qt[i].first;
