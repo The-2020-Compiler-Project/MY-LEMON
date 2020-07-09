@@ -35,7 +35,7 @@ stack<string> ifelseSTK;    //ifelse标号栈
 stack<string> whileSTK;     //while标号栈
 stack<string> xingcanSTK;   //形参栈，用来管理形参
 stack<string> funcSTK;      //函数名栈，标记当前处理的函数
-int SIoffset = 0;
+int SIoffset = -2;
 
 
 //汇编语句标号
@@ -82,7 +82,7 @@ void active_info_write(int dstart, int dend)    //活跃信息的填写
 		if (Ac.size() == 0)//如果当前数组为空，则先添加一个数据
 		{
 			act.qt_name = NewQt[i].second;
-			if (act.qt_name.at(0) == 't')
+			if (act.qt_name.at(0) == '-')
 			{
 				act.qt_ac = false;  // 临时变量初始时的活跃信息为false
 			}
@@ -103,7 +103,7 @@ void active_info_write(int dstart, int dend)    //活跃信息的填写
 		if (flagq2)
 		{
 			act.qt_name = NewQt[i].second;
-			if (act.qt_name.at(0) == 't')
+			if (act.qt_name.at(0) == '-')
 			{
 				act.qt_ac = false;
 			}
@@ -124,7 +124,7 @@ void active_info_write(int dstart, int dend)    //活跃信息的填写
 		if (flagq3)
 		{
 			act.qt_name = NewQt[i].third;
-			if (act.qt_name.at(0) == 't')
+			if (act.qt_name.at(0) == '-')
 			{
 				act.qt_ac = false;
 			}
@@ -145,7 +145,7 @@ void active_info_write(int dstart, int dend)    //活跃信息的填写
 		if (flagq4)
 		{
 			act.qt_name = NewQt[i].fourth;
-			if (act.qt_name.at(0) == 't')
+			if (act.qt_name.at(0) == '-')
 			{
 				act.qt_ac = false;
 			}
@@ -195,7 +195,53 @@ void active_info()//基本块内填写活跃信息
 	}
 }
 
-void OUTPUTproc()
+void DATBINproc()
+{
+	CODE("DATBIN", "PROC", "");
+	CODE("XOR", "CX,", "CX");
+	CODE("MOV", "BX,", "10");
+	CODE("LOOOP2:", "", "");
+	CODE("MOV", "AL,", "[SI]");
+	CODE("CMP", "AL,", "'$'");
+	CODE("JZ", "RETURN", "");
+	CODE("SUB", "AL,", "'0'");
+	CODE("XOR", "AH,", "AH");
+	CODE("PUSH", "AX", "");
+	CODE("MOV", "AX,", "CX");
+	CODE("MUL", "BX", "");
+	CODE("MOV", "CX,", "AX");
+	CODE("POP", "AX", "");
+	CODE("ADD", "CX,", "AX");
+	CODE("INC", "SI", "");
+	CODE("JMP", "LOOOP2", "");
+	CODE("RETURN :", "", "");
+	CODE("MOV", "CINDATA,", "CX");
+	CODE("RET", "", "");
+	CODE("DATBIN", "ENDP", "");
+}
+
+void INPUTproc()
+{
+	CODE("INPUT", "PROC;", "");
+	CODE("MOV", "DI,", "OFFSET STR1");
+	CODE("LOOOP1 :", "", "");
+	CODE("MOV", "AH,", "01H");
+	CODE("INT", "21H", "");
+	CODE("CMP", "AL,", "13");
+	CODE("JZ", "CONTI", "");
+	CODE("MOV", "[DI],", "AL");
+	CODE("INC", "DI", "");
+	CODE("JMP", "LOOOP1", "");
+	CODE("CONTI :", "", "");
+	CODE("MOV", "SI,", "OFFSET STR1");
+	CODE("CALL", "DATBIN", "");
+	CODE("MOV", "DI,", "OFFSET DATA");	//还原指针
+	CODE("MOV", "SI,", "OFFSET TEMP");
+	CODE("RET", "", "");
+	CODE("INPUT", "ENDP", "");
+}
+
+void OUTPUTproc()		//输出十进制无符号数子程序
 {
 	CODE("OUTPUT", "PROC", "");
 	CODE("XOR", "DX,", "DX");
@@ -226,30 +272,30 @@ void OUTPUTproc()
 
 void load_DX(int rdl, int& DIoffset, int offset)        //储存DX内容到内存
 {
-	if (funcSTK.top() == "main")
+	if (funcSTK.top() == "main")		//如果当前函数为main函数，指针为DI
 	{
 
-		if (offsetTable.count(NewQt[rdl].fourth) == 0)
+		if (offsetTable.count(NewQt[rdl].fourth) == 0)	//内存中没有则写表
 		{
 			CODE("MOV", "[DI+" + to_string(DIoffset + offset) + "],", "DX");
 			DIoffset += offset;
 			offsetTable.insert(pair<string, int>(NewQt[rdl].fourth, DIoffset));
 		}
-		else
+		else    //有则查表
 		{
 			int add = offsetTable.find(NewQt[rdl].fourth)->second;
 			CODE("MOV", "[DI+" + to_string(add) + "],", "DX");
 		}
 	}
-	else
+	else    //如果当前函数不为main函数，指针为SI
 	{
-		if (FUNCoffsetTable.count(NewQt[rdl].fourth) == 0)
+		if (FUNCoffsetTable.count(NewQt[rdl].fourth) == 0) //内存中没有则写表
 		{
 			CODE("MOV", "[SI+" + to_string(SIoffset + offset) + "],", "DX");
 			SIoffset += offset;
 			FUNCoffsetTable.insert(pair<string, int>(NewQt[rdl].fourth, SIoffset));
 		}
-		else
+		else //有则查表
 		{
 			int add = FUNCoffsetTable.find(NewQt[rdl].fourth)->second;
 			CODE("MOV", "[SI+" + to_string(add) + "],", "DX");
@@ -260,7 +306,7 @@ void load_DX(int rdl, int& DIoffset, int offset)        //储存DX内容到内存
 void obcode_DX(string DX, int i, int& DIoffset, int rdl)    //将second送DX
 {
 	int offset = 2;
-	if (DX == " ")
+	if (DX == " ")		//当前寄存器为空
 	{
 		if (isNum(NewQt[i].second))
 		{
@@ -268,7 +314,7 @@ void obcode_DX(string DX, int i, int& DIoffset, int rdl)    //将second送DX
 		}
 		else
 		{
-			if (funcSTK.top() == "main")
+			if (funcSTK.top() == "main")		//查内存地址，送DX
 			{
 				int add = offsetTable.find(NewQt[i].second)->second;
 				CODE("MOV", "DX", "[DI+" + to_string(add) + "],");
@@ -284,7 +330,7 @@ void obcode_DX(string DX, int i, int& DIoffset, int rdl)    //将second送DX
 	{
 		if (NewQt[i].secondac)
 		{
-			load_DX(rdl, DIoffset, offset);
+			load_DX(rdl, DIoffset, offset);		//变量活跃则先保存，调用写内存函数
 			/*CODE("MOV", "[DI+" + to_string(DIoffset + offset) + "],", "DX");
 			DIoffset += offset;
 			offsetTable.insert(pair<string, int>(NewQt[rdl].fourth, DIoffset));*/
@@ -292,7 +338,7 @@ void obcode_DX(string DX, int i, int& DIoffset, int rdl)    //将second送DX
 	}
 	else
 	{
-		if ((rdl != -1) && (NewQt[rdl].fourthac))
+		if ((rdl != -1) && (NewQt[rdl].fourthac)) //变量活跃则先保存，调用写内存函数
 		{
 			load_DX(rdl, DIoffset, offset);
 			/*CODE("MOV", "[DI+" + to_string(DIoffset + offset) + "],", "DX");
@@ -305,7 +351,7 @@ void obcode_DX(string DX, int i, int& DIoffset, int rdl)    //将second送DX
 		}
 		else
 		{
-			if (funcSTK.top() == "main")
+			if (funcSTK.top() == "main")//查内存地址，送DX
 			{
 				int add = offsetTable.find(NewQt[i].second)->second;
 				CODE("MOV", "DX,", "[DI+" + to_string(add) + "]");
@@ -322,7 +368,7 @@ void obcode_DX(string DX, int i, int& DIoffset, int rdl)    //将second送DX
 void obcode_DXBX(string DX, int i, int& DIoffset, int rdl) //将second送DX，将third送BX
 {
 	int offset = 2;
-	if (DX == " ")
+	if (DX == " ")	//当前寄存器为空
 	{
 		if (isNum(NewQt[i].second))
 		{
@@ -361,7 +407,7 @@ void obcode_DXBX(string DX, int i, int& DIoffset, int rdl) //将second送DX，将thi
 	}
 	else if (DX == NewQt[i].second)
 	{
-		if (NewQt[i].secondac)
+		if (NewQt[i].secondac) //变量活跃则先保存，调用写内存函数
 		{
 			load_DX(rdl, DIoffset, offset);
 		}
@@ -385,7 +431,7 @@ void obcode_DXBX(string DX, int i, int& DIoffset, int rdl) //将second送DX，将thi
 	}
 	else
 	{
-		if ((rdl != -1) && (NewQt[rdl].fourthac))
+		if ((rdl != -1) && (NewQt[rdl].fourthac)) //变量活跃则先保存，调用写内存函数
 		{
 			load_DX(rdl, DIoffset, offset);
 		}
@@ -535,27 +581,31 @@ void Relational_operation(int& i, string& DX, string& BX, int& DIoffset, int& rd
 	reOpNum++;
 }
 
-void objectcode_asm(int dstart, int dend)
+void objectcode_asm(int dstart, int dend)	//汇编代码生成主函数
 {
 	int i;//当前处理的四元式
 	int rdl = -1;
 	string AX, BX, CX, DX = " ";   //寄存器状态
 
-	int offset = 2;
-	int DIoffset = 0;
-
+	int offset = 2;		//区距
+	int DIoffset = -2;	//起始位置
+	
 	//funcSTK.push("main");
 	CODE("DSEG", "SEGMENT", " ");
 	CODE("DATA", "DW", "100 DUP(?)");
 	CODE("TEMP", "DW", "20 DUP(?)");
 	CODE("SPSP", "DW", "?");
 	CODE("RESULT", "DW", "?");
+	CODE("STR1", "DB", "50 DUP('$')");
+	CODE("CINDATA", "DW", "0");
 	CODE("DSEG", "ENDS", " ");
 	CODE("SSEG", "SEGMENT", "STACK");
 	CODE("STK", "DW", "50 DUP(0)");
 	CODE("SSEG", "ENDS", " ");
 	CODE("CSEG", "SEGMENT", "");
 	CODE("", "ASSUME", "CS:CSEG,DS:DSEG,SS:SSEG,ES:DSEG");
+	DATBINproc();
+	INPUTproc();
 	OUTPUTproc();
 
 	for (i = dstart; i < dend; i++)
@@ -787,6 +837,73 @@ void objectcode_asm(int dstart, int dend)
 			CODE("LPCONTI" + whileSTK.top() + ":", "", "");
 			whileSTK.pop();
 			DX = " ";
+		}
+		else if (NewQt[i].first == "cin")
+		{
+			CODE("CALL", "INPUT", "");
+			CODE("MOV", "DX,", "CINDATA");
+			load_DX(i, DIoffset, offset);
+
+			DX = NewQt[i].fourth;
+			rdl = i;
+		}
+		else if (NewQt[i].first == "cout")
+		{
+			if (DX == " ")		//当前寄存器为空
+			{
+				if (isNum(NewQt[i].fourth))
+				{
+					CODE("MOV", "DX,", NewQt[i].fourth);
+				}
+				else
+				{
+					if (funcSTK.top() == "main")		//查内存地址，送DX
+					{
+						int add = offsetTable.find(NewQt[i].fourth)->second;
+						CODE("MOV", "DX", "[DI+" + to_string(add) + "],");
+					}
+					else
+					{
+						int add = FUNCoffsetTable.find(NewQt[i].fourth)->second;
+						CODE("MOV", "DX", "[SI+" + to_string(add) + "],");
+					}
+				}
+			}
+			else if (DX == NewQt[i].fourth)
+			{
+				if (NewQt[i].secondac)
+				{
+					load_DX(rdl, DIoffset, offset);		//变量活跃则先保存，调用写内存函数
+				}
+			}
+			else
+			{
+				if ((rdl != -1) && (NewQt[rdl].fourthac)) //变量活跃则先保存，调用写内存函数
+				{
+					load_DX(rdl, DIoffset, offset);
+				}
+				if (isNum(NewQt[i].fourth))
+				{
+					CODE("MOV", "DX,", NewQt[i].fourth);
+				}
+				else
+				{
+					if (funcSTK.top() == "main")//查内存地址，送DX
+					{
+						int add = offsetTable.find(NewQt[i].fourth)->second;
+						CODE("MOV", "DX,", "[DI+" + to_string(add) + "]");
+					}
+					else
+					{
+						int add = FUNCoffsetTable.find(NewQt[i].fourth)->second;
+						CODE("MOV", "DX,", "[SI+" + to_string(add) + "]");
+					}
+				}
+			}
+			CODE("MOV", "RESULT,", "DX");
+			CODE("CALL", "OUTPUT", "");
+			DX = " ";
+			rdl = i;
 		}
 	}
 	CODE("MOV", "AH,", "4CH");
